@@ -9,6 +9,7 @@ import Portfolio from "./pages/Portfolio";
 import Staking from "./pages/Staking";
 import Artists from "./pages/Artists";
 import Patents from "./pages/Patents";
+import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/patents" element={<Patents />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/staking" element={<Staking />} />
+          <Route path="/history" element={<History />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

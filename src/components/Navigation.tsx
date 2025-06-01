@@ -21,7 +21,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
-              <div className="molecular-icon text-cyber-green animate-pixel-pulse">
+              <div className="molecular-icon text-cyber-purple animate-pixel-pulse">
               </div>
               <span className="text-2xl font-retro neon-text glitch-text" data-text="MEDICI">MEDICI</span>
             </div>
@@ -33,8 +33,8 @@ export const Navigation = () => {
                   href={item.href}
                   className={`px-4 py-2 font-retro text-xs uppercase transition-all ${
                     item.active
-                      ? 'bg-cyber-green text-black border-2 border-cyber-green'
-                      : 'text-cyber-green hover:bg-cyber-green/10 border-2 border-transparent hover:border-cyber-green'
+                      ? 'bg-cyber-purple text-white border-2 border-cyber-purple'
+                      : 'text-cyber-purple hover:bg-cyber-purple/10 border-2 border-transparent hover:border-cyber-purple'
                   }`}
                 >
                   {item.label}
@@ -45,14 +45,14 @@ export const Navigation = () => {
           
           <div className="flex items-center space-x-4">
             <div className="text-right mr-4 font-pixel">
-              <p className="text-xs text-cyber-green/70">$IP BALANCE</p>
+              <p className="text-xs text-cyber-purple/70">$IP BALANCE</p>
               <p className="text-lg font-bold neon-text">12,450 $IP</p>
             </div>
             <Button variant="outline" size="sm" className="pixel-button">
               <Wallet className="w-4 h-4 mr-2" />
               CONNECT
             </Button>
-            <Button variant="ghost" size="sm" className="border-2 border-cyber-purple text-cyber-purple hover:bg-cyber-purple hover:text-black">
+            <Button variant="ghost" size="sm" className="border-2 border-cyber-magenta text-cyber-magenta hover:bg-cyber-magenta hover:text-black">
               <Users className="w-4 h-4" />
             </Button>
           </div>

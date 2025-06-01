@@ -7,7 +7,7 @@ export const PatentsHeader = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-4xl font-retro neon-text mb-4 glitch-text" data-text="PATENTS GOVERNANCE">PATENTS GOVERNANCE</h1>
-        <p className="text-cyber-green/80 font-pixel text-lg">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
+        <p className="text-cyber-purple/80 font-pixel text-lg">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">

@@ -6,22 +6,22 @@
 @layer base {
   :root {
     --background: 0 0% 4%;
-    --foreground: 120 100% 80%;
+    --foreground: 270 100% 80%;
 
     --card: 0 0% 8%;
-    --card-foreground: 120 100% 80%;
+    --card-foreground: 270 100% 80%;
 
     --popover: 0 0% 8%;
-    --popover-foreground: 120 100% 80%;
+    --popover-foreground: 270 100% 80%;
 
-    --primary: 120 100% 50%;
+    --primary: 270 100% 50%;
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 270 100% 25%;
-    --secondary-foreground: 120 100% 80%;
+    --secondary: 300 100% 25%;
+    --secondary-foreground: 270 100% 80%;
 
     --muted: 0 0% 10%;
-    --muted-foreground: 120 50% 60%;
+    --muted-foreground: 270 50% 60%;
 
     --accent: 300 100% 50%;
     --accent-foreground: 0 0% 0%;
@@ -29,20 +29,20 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 120 100% 15%;
-    --input: 120 100% 15%;
-    --ring: 120 100% 50%;
+    --border: 270 100% 15%;
+    --input: 270 100% 15%;
+    --ring: 270 100% 50%;
 
     --radius: 0rem;
 
     --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 120 100% 80%;
-    --sidebar-primary: 120 100% 50%;
+    --sidebar-foreground: 270 100% 80%;
+    --sidebar-primary: 270 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 120 100% 80%;
-    --sidebar-border: 120 100% 15%;
-    --sidebar-ring: 120 100% 50%;
+    --sidebar-accent-foreground: 270 100% 80%;
+    --sidebar-border: 270 100% 15%;
+    --sidebar-ring: 270 100% 50%;
   }
 }
 
@@ -58,7 +58,7 @@
     position: relative;
   }
 
-  /* Scanline effect */
+  /* Scanline effect - updated to purple */
   body::before {
     content: '';
     position: fixed;
@@ -66,7 +66,7 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.8), transparent);
+    background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.8), transparent);
     z-index: 9999;
     animation: scan-line 3s linear infinite;
     pointer-events: none;
@@ -88,14 +88,14 @@
 
 @layer components {
   .pixel-card {
-    @apply bg-black/80 border-2 border-cyber-green rounded-none shadow-pixel backdrop-blur-sm;
+    @apply bg-black/80 border-2 border-cyber-purple rounded-none shadow-pixel backdrop-blur-sm;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
   }
   
   .pixel-button {
-    @apply bg-cyber-green text-black border-2 border-cyber-green rounded-none shadow-pixel font-retro text-xs uppercase tracking-wider transition-all duration-100;
+    @apply bg-cyber-purple text-white border-2 border-cyber-purple rounded-none shadow-pixel font-retro text-xs uppercase tracking-wider transition-all duration-100;
     image-rendering: pixelated;
   }
   
@@ -104,12 +104,12 @@
   }
   
   .pixel-input {
-    @apply bg-black/90 border-2 border-cyber-green rounded-none text-cyber-green font-pixel placeholder-cyber-green/50 focus:border-cyber-pink focus:shadow-neon focus:outline-none;
+    @apply bg-black/90 border-2 border-cyber-purple rounded-none text-cyber-purple font-pixel placeholder-cyber-purple/50 focus:border-cyber-pink focus:shadow-neon focus:outline-none;
     image-rendering: pixelated;
   }
   
   .retro-progress {
-    @apply bg-black border-2 border-cyber-green rounded-none h-4 overflow-hidden;
+    @apply bg-black border-2 border-cyber-purple rounded-none h-4 overflow-hidden;
   }
   
   .retro-progress-fill {
@@ -119,16 +119,16 @@
   }
   
   .neon-text {
-    @apply text-cyber-green;
+    @apply text-cyber-purple;
     text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
   }
   
   .cyber-badge {
-    @apply bg-cyber-purple text-black border-2 border-cyber-purple rounded-none font-retro text-xs px-2 py-1 uppercase;
+    @apply bg-cyber-magenta text-black border-2 border-cyber-magenta rounded-none font-retro text-xs px-2 py-1 uppercase;
   }
 
   .molecular-icon {
-    @apply w-16 h-16 relative bg-gradient-to-br from-cyber-green to-cyber-pink rounded-none border-2 border-cyber-cyan;
+    @apply w-16 h-16 relative bg-gradient-to-br from-cyber-purple to-cyber-pink rounded-none border-2 border-cyber-cyan;
     image-rendering: pixelated;
   }
 

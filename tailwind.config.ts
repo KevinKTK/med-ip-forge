@@ -63,11 +63,11 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// 8-bit crypto aesthetic colors
+				// 8-bit crypto aesthetic colors - updated to purple theme
 				cyber: {
-					green: '#00FF41',
-					pink: '#FF0080',
 					purple: '#8A2BE2',
+					pink: '#FF0080',
+					magenta: '#FF00FF',
 					cyan: '#00FFFF',
 					orange: '#FF4500',
 					yellow: '#FFD700'
@@ -77,7 +77,7 @@ export default {
 					purple: '#B83DFF',
 					cyan: '#39FFFF',
 					pink: '#FF3D8B',
-					green: '#00FF88'
+					magenta: '#FF00FF'
 				},
 				retro: {
 					dark: '#0A0A0A',
@@ -114,10 +114,10 @@ export default {
 				},
 				'pulse-glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 5px rgba(0, 212, 255, 0.5)'
+						boxShadow: '0 0 5px rgba(138, 43, 226, 0.5)'
 					},
 					'50%': {
-						boxShadow: '0 0 20px rgba(0, 212, 255, 0.8), 0 0 30px rgba(0, 212, 255, 0.4)'
+						boxShadow: '0 0 20px rgba(138, 43, 226, 0.8), 0 0 30px rgba(138, 43, 226, 0.4)'
 					}
 				},
 				'gradient-shift': {
@@ -176,15 +176,15 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-				'cyber-grid': 'linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px)',
+				'cyber-grid': 'linear-gradient(rgba(138, 43, 226, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(138, 43, 226, 0.1) 1px, transparent 1px)',
 				'retro-gradient': 'linear-gradient(135deg, #000000 0%, #1a1a1a 25%, #000000 50%, #2a0a2a 75%, #000000 100%)',
-				'neon-gradient': 'linear-gradient(135deg, #00D4FF 0%, #B83DFF 100%)',
-				'cyber-gradient': 'linear-gradient(135deg, #00FF41 0%, #FF0080 50%, #8A2BE2 100%)'
+				'neon-gradient': 'linear-gradient(135deg, #B83DFF 0%, #FF3D8B 100%)',
+				'cyber-gradient': 'linear-gradient(135deg, #8A2BE2 0%, #FF0080 50%, #FF00FF 100%)'
 			},
 			boxShadow: {
 				'pixel': '4px 4px 0px rgba(0, 0, 0, 0.5)',
 				'neon': '0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor',
-				'cyber': '0 0 20px rgba(0, 255, 65, 0.5), inset 0 0 20px rgba(0, 255, 65, 0.1)'
+				'cyber': '0 0 20px rgba(138, 43, 226, 0.5), inset 0 0 20px rgba(138, 43, 226, 0.1)'
 			}
 		}
 	},
