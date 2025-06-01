@@ -23,7 +23,7 @@ export const Navigation = () => {
             <div className="flex items-center space-x-3">
               <div className="molecular-icon text-cyber-purple animate-pixel-pulse">
               </div>
-              <span className="text-2xl font-retro neon-text glitch-text" data-text="MEDICI">MEDICI</span>
+              <span className="text-2xl font-retro subtle-glow glitch-text" data-text="MEDICI">MEDICI</span>
             </div>
             
             <div className="hidden md:flex space-x-1">
@@ -46,7 +46,7 @@ export const Navigation = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right mr-4 font-pixel">
               <p className="text-xs text-cyber-purple/70">$IP BALANCE</p>
-              <p className="text-lg font-bold neon-text">12,450 $IP</p>
+              <p className="text-lg font-bold text-cyber-violet">12,450 $IP</p>
             </div>
             <Button variant="outline" size="sm" className="pixel-button">
               <Wallet className="w-4 h-4 mr-2" />
