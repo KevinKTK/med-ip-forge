@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { wallet, users, history, settings } from 'lucide-react';
+import { Wallet, Users, History, Settings } from 'lucide-react';
 
 export const Navigation = () => {
   const navItems = [
@@ -41,11 +41,11 @@ export const Navigation = () => {
           
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="sm" className="neon-border">
-              <wallet className="w-4 h-4 mr-2" />
+              <Wallet className="w-4 h-4 mr-2" />
               Connect Wallet
             </Button>
             <Button variant="ghost" size="sm">
-              <users className="w-4 h-4" />
+              <Users className="w-4 h-4" />
             </Button>
           </div>
         </div>
