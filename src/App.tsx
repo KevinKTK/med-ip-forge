@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Portfolio from "./pages/Portfolio";
 import Staking from "./pages/Staking";
 import Artists from "./pages/Artists";
+import Patents from "./pages/Patents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,9 +21,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/artists" element={<Artists />} />
+          <Route path="/patents" element={<Patents />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/staking" element={<Staking />} />
-          <Route path="/artists" element={<Artists />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

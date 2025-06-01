@@ -8,9 +8,10 @@ export const Navigation = () => {
   
   const navItems = [
     { label: 'Dashboard', href: '/', active: location.pathname === '/' },
+    { label: 'Artists', href: '/artists', active: location.pathname === '/artists' },
+    { label: 'Patents', href: '/patents', active: location.pathname === '/patents' },
     { label: 'Portfolio', href: '/portfolio', active: location.pathname === '/portfolio' },
     { label: 'Staking', href: '/staking', active: location.pathname === '/staking' },
-    { label: 'Artists', href: '/artists', active: location.pathname === '/artists' },
     { label: 'History', href: '/history', active: location.pathname === '/history' },
   ];
 
