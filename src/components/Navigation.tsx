@@ -1,13 +1,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Wallet, Users, History, Settings } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export const Navigation = () => {
+  const location = useLocation();
+  
   const navItems = [
-    { label: 'Dashboard', href: '/', active: true },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'Staking', href: '/staking' },
-    { label: 'History', href: '/history' },
+    { label: 'Dashboard', href: '/', active: location.pathname === '/' },
+    { label: 'Portfolio', href: '/portfolio', active: location.pathname === '/portfolio' },
+    { label: 'Staking', href: '/staking', active: location.pathname === '/staking' },
+    { label: 'History', href: '/history', active: location.pathname === '/history' },
   ];
 
   return (
