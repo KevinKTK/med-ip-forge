@@ -3,7 +3,7 @@ import { Layout } from '@/components/Layout';
 import { StatCard } from '@/components/Dashboard/StatCard';
 import { AssetTabs } from '@/components/Dashboard/AssetTabs';
 import { ActivityFeed } from '@/components/Dashboard/ActivityFeed';
-import { wallet, users, chart-bar } from 'lucide-react';
+import { Wallet, Users, BarChart3 } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -26,21 +26,21 @@ const Index = () => {
             value="$47.2M"
             change="12.3%"
             positive={true}
-            icon={<chart-bar className="w-8 h-8" />}
+            icon={<BarChart3 className="w-8 h-8" />}
           />
           <StatCard
             title="Active Stakers"
             value="8,542"
             change="5.7%"
             positive={true}
-            icon={<users className="w-8 h-8" />}
+            icon={<Users className="w-8 h-8" />}
           />
           <StatCard
             title="Total Staked"
             value="$23.8M"
             change="8.9%"
             positive={true}
-            icon={<wallet className="w-8 h-8" />}
+            icon={<Wallet className="w-8 h-8" />}
           />
         </div>
 
