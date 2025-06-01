@@ -10,6 +10,7 @@ export const Navigation = () => {
     { label: 'Dashboard', href: '/', active: location.pathname === '/' },
     { label: 'Portfolio', href: '/portfolio', active: location.pathname === '/portfolio' },
     { label: 'Staking', href: '/staking', active: location.pathname === '/staking' },
+    { label: 'Artists', href: '/artists', active: location.pathname === '/artists' },
     { label: 'History', href: '/history', active: location.pathname === '/history' },
   ];
 
@@ -43,6 +44,10 @@ export const Navigation = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <div className="text-right mr-4">
+              <p className="text-xs text-gray-400">$IP Balance</p>
+              <p className="text-sm font-bold text-neon-blue">12,450 $IP</p>
+            </div>
             <Button variant="outline" size="sm" className="neon-border">
               <Wallet className="w-4 h-4 mr-2" />
               Connect Wallet

@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Filter, RotateCcw } from 'lucide-react';
 
@@ -10,12 +11,13 @@ interface StakingFiltersProps {
     riskLevel: string;
     minApy: number;
     maxCompletion: number;
+    showFutureProjects: boolean;
   };
   onFiltersChange: (filters: any) => void;
 }
 
 export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps) => {
-  const assetTypes = ['All', 'Patent', 'Copyright'];
+  const assetTypes = ['All', 'Patent', 'Copyright', 'Future Copyright'];
   const riskLevels = ['All', 'Low', 'Medium', 'High'];
   
   const updateFilter = (key: string, value: any) => {
@@ -27,7 +29,8 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
       assetType: 'All',
       riskLevel: 'All',
       minApy: 0,
-      maxCompletion: 100
+      maxCompletion: 100,
+      showFutureProjects: true
     });
   };
 
@@ -54,7 +57,7 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
       <CardContent className="space-y-4">
         <div>
           <label className="text-sm text-gray-400 mb-2 block">Asset Type</label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {assetTypes.map((type) => (
               <Button
                 key={type}
@@ -107,6 +110,20 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
               placeholder="100"
             />
           </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <label className="text-sm text-gray-400">Include Future Projects</label>
+          <Switch
+            checked={filters.showFutureProjects}
+            onCheckedChange={(checked) => updateFilter('showFutureProjects', checked)}
+          />
+        </div>
+        
+        <div className="pt-2">
+          <Badge variant="outline" className="w-full justify-center neon-border">
+            💡 Future projects offer higher APY but carry additional risk
+          </Badge>
         </div>
       </CardContent>
     </Card>
