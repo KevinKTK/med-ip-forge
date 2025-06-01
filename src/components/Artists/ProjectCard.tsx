@@ -33,10 +33,10 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
-      case 'low': return 'bg-green-500/20 text-green-400 border-green-400/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30';
-      case 'high': return 'bg-red-500/20 text-red-400 border-red-400/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-400/30';
+      case 'low': return 'bg-cyber-green text-black border-cyber-green';
+      case 'medium': return 'bg-cyber-orange text-black border-cyber-orange';
+      case 'high': return 'bg-cyber-pink text-black border-cyber-pink';
+      default: return 'bg-cyber-purple text-black border-cyber-purple';
     }
   };
 
@@ -51,61 +51,63 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
 
   return (
     <>
-      <Card className="glass-card hover:neon-glow transition-all duration-300 cursor-pointer">
+      <Card className="pixel-card hover:shadow-cyber transition-all duration-300 cursor-pointer">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle className="text-lg font-bold text-white mb-1">{project.title}</CardTitle>
-              <p className="text-sm text-gray-400 mb-2">by {project.artist}</p>
-              <p className="text-sm text-gray-300 line-clamp-2">{project.description}</p>
+              <CardTitle className="text-lg font-retro neon-text mb-1">{project.title}</CardTitle>
+              <p className="text-sm text-cyber-green/70 mb-2 font-pixel">by {project.artist}</p>
+              <p className="text-sm text-cyber-green/90 line-clamp-2 font-pixel">{project.description}</p>
             </div>
-            <Badge className={getRiskColor(project.riskLevel)}>{project.riskLevel}</Badge>
+            <Badge className={`cyber-badge ${getRiskColor(project.riskLevel)}`}>{project.riskLevel}</Badge>
           </div>
           
           <div className="flex items-center gap-4 mt-3">
-            <Badge variant="outline" className="neon-border">
+            <Badge className="border-2 border-cyber-purple text-cyber-purple bg-transparent font-retro text-xs">
               {project.category}
             </Badge>
-            <div className="flex items-center text-neon-blue">
+            <div className="flex items-center text-cyber-pink">
               <TrendingUp className="w-4 h-4 mr-1" />
-              <span className="font-bold">{project.stakingApy}% APY</span>
+              <span className="font-retro">{project.stakingApy}% APY</span>
             </div>
           </div>
         </CardHeader>
         
         <CardContent className="space-y-4">
           <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Funding Progress</span>
-              <span className="text-white font-medium">{fundingPercentage.toFixed(1)}%</span>
+            <div className="flex justify-between text-sm mb-2 font-pixel">
+              <span className="text-cyber-green/70">FUNDING PROGRESS</span>
+              <span className="text-cyber-green font-medium">{fundingPercentage.toFixed(1)}%</span>
             </div>
-            <Progress value={fundingPercentage} className="h-2" />
-            <div className="flex justify-between text-sm mt-1">
-              <span className="text-neon-blue font-medium">{formatNumber(project.currentFunding)}</span>
-              <span className="text-gray-400">{formatNumber(project.targetFunding)}</span>
+            <div className="retro-progress">
+              <div className="retro-progress-fill" style={{ width: `${fundingPercentage}%` }}></div>
+            </div>
+            <div className="flex justify-between text-sm mt-1 font-pixel">
+              <span className="neon-text font-medium">{formatNumber(project.currentFunding)}</span>
+              <span className="text-cyber-green/70">{formatNumber(project.targetFunding)}</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm font-pixel">
             <div>
-              <p className="text-gray-400">Milestones</p>
-              <p className="text-white font-medium">{project.completedMilestones}/{project.milestones}</p>
+              <p className="text-cyber-green/70">MILESTONES</p>
+              <p className="text-cyber-green font-medium">{project.completedMilestones}/{project.milestones}</p>
             </div>
             <div>
-              <p className="text-gray-400">Time Remaining</p>
-              <p className="text-neon-blue font-medium">{project.timeRemaining}</p>
+              <p className="text-cyber-green/70">TIME LEFT</p>
+              <p className="neon-text font-medium">{project.timeRemaining}</p>
             </div>
           </div>
           
           <div className="flex gap-2 pt-2">
             <Button 
               onClick={() => setShowStakeModal(true)}
-              className="flex-1 bg-neon-gradient hover:opacity-90"
+              className="flex-1 pixel-button bg-cyber-gradient"
             >
               <Coins className="w-4 h-4 mr-2" />
-              Stake $IP
+              STAKE $IP
             </Button>
-            <Button variant="outline" className="neon-border">
+            <Button className="border-2 border-cyber-pink text-cyber-pink bg-transparent hover:bg-cyber-pink hover:text-black">
               <Star className="w-4 h-4" />
             </Button>
           </div>

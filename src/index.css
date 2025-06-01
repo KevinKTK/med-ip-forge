@@ -5,44 +5,44 @@
 
 @layer base {
   :root {
-    --background: 217 32% 6%;
-    --foreground: 213 31% 91%;
+    --background: 0 0% 4%;
+    --foreground: 120 100% 80%;
 
-    --card: 217 33% 8%;
-    --card-foreground: 213 31% 91%;
+    --card: 0 0% 8%;
+    --card-foreground: 120 100% 80%;
 
-    --popover: 217 33% 8%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 120 100% 80%;
 
-    --primary: 195 100% 50%;
-    --primary-foreground: 217 33% 8%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 221 39% 11%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 270 100% 25%;
+    --secondary-foreground: 120 100% 80%;
 
-    --muted: 221 39% 11%;
-    --muted-foreground: 218 11% 65%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 120 50% 60%;
 
-    --accent: 221 39% 11%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 300 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 221 39% 11%;
-    --input: 221 39% 11%;
-    --ring: 195 100% 50%;
+    --border: 120 100% 15%;
+    --input: 120 100% 15%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
 
-    --sidebar-background: 217 32% 6%;
-    --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 195 100% 50%;
-    --sidebar-primary-foreground: 217 33% 8%;
-    --sidebar-accent: 221 39% 11%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 221 39% 11%;
-    --sidebar-ring: 195 100% 50%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 120 100% 80%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 120 100% 80%;
+    --sidebar-border: 120 100% 15%;
+    --sidebar-ring: 120 100% 50%;
   }
 }
 
@@ -52,24 +52,129 @@
   }
 
   body {
-    @apply bg-medici-gradient text-foreground font-sans antialiased;
+    @apply bg-retro-gradient text-foreground font-pixel antialiased;
+    background-size: 20px 20px;
+    background-image: var(--tw-gradient-cyber-grid);
+    position: relative;
+  }
+
+  /* Scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.8), transparent);
+    z-index: 9999;
+    animation: scan-line 3s linear infinite;
+    pointer-events: none;
+  }
+
+  /* CRT curvature effect */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.3) 100%);
+    z-index: 9998;
+    pointer-events: none;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-sm border border-white/10 rounded-lg;
+  .pixel-card {
+    @apply bg-black/80 border-2 border-cyber-green rounded-none shadow-pixel backdrop-blur-sm;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
   
-  .neon-border {
-    @apply border border-neon-blue/30 shadow-lg shadow-neon-blue/10;
+  .pixel-button {
+    @apply bg-cyber-green text-black border-2 border-cyber-green rounded-none shadow-pixel font-retro text-xs uppercase tracking-wider transition-all duration-100;
+    image-rendering: pixelated;
   }
   
-  .neon-glow {
-    @apply shadow-lg shadow-neon-blue/20;
+  .pixel-button:hover {
+    @apply bg-cyber-pink border-cyber-pink shadow-neon transform translate-x-1 translate-y-1;
   }
   
-  .gradient-text {
-    @apply bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent;
+  .pixel-input {
+    @apply bg-black/90 border-2 border-cyber-green rounded-none text-cyber-green font-pixel placeholder-cyber-green/50 focus:border-cyber-pink focus:shadow-neon focus:outline-none;
+    image-rendering: pixelated;
+  }
+  
+  .retro-progress {
+    @apply bg-black border-2 border-cyber-green rounded-none h-4 overflow-hidden;
+  }
+  
+  .retro-progress-fill {
+    @apply bg-cyber-gradient h-full transition-all duration-300;
+    background-size: 8px 8px;
+    background-image: linear-gradient(45deg, rgba(0,0,0,.2) 25%, transparent 25%, transparent 50%, rgba(0,0,0,.2) 50%, rgba(0,0,0,.2) 75%, transparent 75%, transparent);
+  }
+  
+  .neon-text {
+    @apply text-cyber-green;
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+  
+  .cyber-badge {
+    @apply bg-cyber-purple text-black border-2 border-cyber-purple rounded-none font-retro text-xs px-2 py-1 uppercase;
+  }
+
+  .molecular-icon {
+    @apply w-16 h-16 relative bg-gradient-to-br from-cyber-green to-cyber-pink rounded-none border-2 border-cyber-cyan;
+    image-rendering: pixelated;
+  }
+
+  .molecular-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    box-shadow: 
+      -20px -20px 0 2px currentColor,
+      20px -20px 0 2px currentColor,
+      -20px 20px 0 2px currentColor,
+      20px 20px 0 2px currentColor,
+      0 -28px 0 1px currentColor,
+      0 28px 0 1px currentColor,
+      -28px 0 0 1px currentColor,
+      28px 0 0 1px currentColor;
+  }
+
+  .glitch-text {
+    position: relative;
+  }
+
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch-text::before {
+    animation: glitch 0.3s ease-in-out infinite alternate-reverse;
+    color: #ff0080;
+    z-index: -1;
+  }
+
+  .glitch-text::after {
+    animation: glitch 0.3s ease-in-out infinite alternate;
+    color: #00ffff;
+    z-index: -2;
   }
 }

@@ -16,26 +16,25 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav className="glass-card mx-4 mt-4 mb-6">
+    <nav className="pixel-card mx-4 mt-4 mb-6 relative">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-neon-gradient rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
+            <div className="flex items-center space-x-3">
+              <div className="molecular-icon text-cyber-green animate-pixel-pulse">
               </div>
-              <span className="text-xl font-bold gradient-text">Medici</span>
+              <span className="text-2xl font-retro neon-text glitch-text" data-text="MEDICI">MEDICI</span>
             </div>
             
-            <div className="hidden md:flex space-x-6">
+            <div className="hidden md:flex space-x-1">
               {navItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 font-retro text-xs uppercase transition-all ${
                     item.active
-                      ? 'text-neon-blue border-b-2 border-neon-blue'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-cyber-green text-black border-2 border-cyber-green'
+                      : 'text-cyber-green hover:bg-cyber-green/10 border-2 border-transparent hover:border-cyber-green'
                   }`}
                 >
                   {item.label}
@@ -45,15 +44,15 @@ export const Navigation = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="text-right mr-4">
-              <p className="text-xs text-gray-400">$IP Balance</p>
-              <p className="text-sm font-bold text-neon-blue">12,450 $IP</p>
+            <div className="text-right mr-4 font-pixel">
+              <p className="text-xs text-cyber-green/70">$IP BALANCE</p>
+              <p className="text-lg font-bold neon-text">12,450 $IP</p>
             </div>
-            <Button variant="outline" size="sm" className="neon-border">
+            <Button variant="outline" size="sm" className="pixel-button">
               <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
+              CONNECT
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="border-2 border-cyber-purple text-cyber-purple hover:bg-cyber-purple hover:text-black">
               <Users className="w-4 h-4" />
             </Button>
           </div>

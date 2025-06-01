@@ -14,12 +14,12 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Artist Marketplace</h1>
-          <p className="text-gray-400 mt-2">Discover and invest in the future of creative projects</p>
+          <h1 className="text-4xl font-retro neon-text glitch-text" data-text="ARTIST MARKETPLACE">ARTIST MARKETPLACE</h1>
+          <p className="text-cyber-green/80 mt-2 font-pixel">Discover and invest in the future of creative projects</p>
         </div>
-        <Button onClick={onCreateProject} className="bg-neon-gradient hover:opacity-90">
+        <Button onClick={onCreateProject} className="pixel-button bg-cyber-gradient">
           <Plus className="w-4 h-4 mr-2" />
-          Create Project
+          CREATE PROJECT
         </Button>
       </div>
       
@@ -54,20 +54,18 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
         />
       </div>
       
-      <div className="flex space-x-4">
+      <div className="flex space-x-2">
         <Button
-          variant={activeTab === 'projects' ? 'default' : 'outline'}
           onClick={() => onTabChange('projects')}
-          className={activeTab === 'projects' ? 'bg-neon-gradient' : 'neon-border'}
+          className={activeTab === 'projects' ? 'pixel-button bg-cyber-green text-black' : 'border-2 border-cyber-green text-cyber-green bg-transparent hover:bg-cyber-green hover:text-black font-retro text-xs'}
         >
-          Active Projects
+          ACTIVE PROJECTS
         </Button>
         <Button
-          variant={activeTab === 'artists' ? 'default' : 'outline'}
           onClick={() => onTabChange('artists')}
-          className={activeTab === 'artists' ? 'bg-neon-gradient' : 'neon-border'}
+          className={activeTab === 'artists' ? 'pixel-button bg-cyber-green text-black' : 'border-2 border-cyber-green text-cyber-green bg-transparent hover:bg-cyber-green hover:text-black font-retro text-xs'}
         >
-          Featured Artists
+          FEATURED ARTISTS
         </Button>
       </div>
     </div>

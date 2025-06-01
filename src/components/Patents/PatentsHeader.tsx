@@ -4,10 +4,10 @@ import { Vote, TrendingUp, Coins, Target, Users } from 'lucide-react';
 
 export const PatentsHeader = () => {
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Patents Governance</h1>
-        <p className="text-gray-400 mt-2">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-4xl font-retro neon-text mb-4 glitch-text" data-text="PATENTS GOVERNANCE">PATENTS GOVERNANCE</h1>
+        <p className="text-cyber-green/80 font-pixel text-lg">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
