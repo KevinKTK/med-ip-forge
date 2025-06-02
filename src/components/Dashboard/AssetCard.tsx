@@ -17,7 +17,7 @@ export const AssetCard = ({ title, type, creator, marketCap, completion, apy, im
   const typeBg = type === 'Copyright' ? 'bg-neon-purple/10' : 'bg-neon-cyan/10';
   
   return (
-    <div className="glass-card p-6 neon-border hover:neon-glow transition-all duration-300 group">
+    <div className="pixel-card pixel-outline p-6 hover:shadow-cyber transition-all duration-300 group">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">

@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +31,7 @@ export const ProjectCard = ({ project, onVote }: ProjectCardProps) => {
   };
 
   return (
-    <div className="pixel-card p-6 space-y-4 hover:shadow-cyber transition-all duration-300 animate-pixel-pulse">
+    <div className="pixel-card pixel-outline p-6 space-y-4 hover:shadow-cyber transition-all duration-300 animate-pixel-pulse">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-retro text-lg neon-text">{project.name}</h3>
