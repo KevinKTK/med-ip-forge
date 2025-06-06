@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
-import { Wallet, Users, History, Settings } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Wallet, Users } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
 
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useAccount, useDisconnect } from 'wagmi';
@@ -40,9 +40,9 @@ export const Navigation = () => {
 
             <div className="hidden md:flex space-x-1">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.label}
-                  href={item.href}
+                  to={item.href}
                   className={`px-4 py-2 font-retro text-xs uppercase transition-all ${
                     item.active
                       ? 'bg-cyber-purple text-white border-2 border-cyber-purple'
@@ -50,7 +50,7 @@ export const Navigation = () => {
                   }`}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
