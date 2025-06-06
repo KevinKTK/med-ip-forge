@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,9 +19,13 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { storyAeneid } from 'wagmi/chains'; // Add any chains you need
 
 const queryClient = new QueryClient();
+
+// Provide a fallback projectId for development/demo purposes
+const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id-replace-with-real-one';
+
 const { connectors } = getDefaultWallets({
   appName: 'Medici',
-  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
+  projectId: projectId,
 });
 
 const wagmiConfig = createConfig({
