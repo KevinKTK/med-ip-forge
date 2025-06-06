@@ -3,9 +3,21 @@ import { Button } from '@/components/ui/button';
 import { Wallet, Users, History, Settings } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useAccount, useDisconnect } from 'wagmi';
+
+
 export const Navigation = () => {
   const location = useLocation();
-  
+
+  const { openConnectModal } = useConnectModal();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const shortenAddress = (addr: string) => {
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  };
+
+
   const navItems = [
     { label: 'Dashboard', href: '/', active: location.pathname === '/' },
     { label: 'Artists', href: '/artists', active: location.pathname === '/artists' },
@@ -25,7 +37,7 @@ export const Navigation = () => {
               </div>
               <span className="text-2xl font-retro subtle-glow glitch-text" data-text="MEDICI">MEDICI</span>
             </div>
-            
+
             <div className="hidden md:flex space-x-1">
               {navItems.map((item) => (
                 <a
@@ -42,19 +54,52 @@ export const Navigation = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <div className="text-right mr-4 font-pixel">
               <p className="text-xs text-cyber-purple/70">$IP BALANCE</p>
               <p className="text-lg font-bold text-cyber-violet">12,450 $IP</p>
             </div>
-            <Button variant="outline" size="sm" className="pixel-button">
-              <Wallet className="w-4 h-4 mr-2" />
-              CONNECT
-            </Button>
-            <Button variant="ghost" size="sm" className="border-2 border-cyber-magenta text-cyber-magenta hover:bg-cyber-magenta hover:text-black">
-              <Users className="w-4 h-4" />
-            </Button>
+            {/* --- 4. Conditionally render UI based on `isConnected` --- */}
+            {isConnected ? (
+                // RENDER THIS WHEN WALLET IS CONNECTED
+                <div className="flex items-center gap-4">
+                  <p className="font-pixel text-xs text-cyber-violet hidden sm:block">
+                    {shortenAddress(address!)}
+                  </p>
+                  <Button
+                      variant="outline"
+                      size="sm"
+                      className="pixel-button"
+                      onClick={() => disconnect()}
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+            ) : (
+                // RENDER THIS WHEN WALLET IS NOT CONNECTED
+                <div className="flex items-center gap-2">
+                  <Button
+                      variant="outline"
+                      size="sm"
+                      className="pixel-button"
+                      // Use the function from the hook here
+                      onClick={() => openConnectModal && openConnectModal()}
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
+                    CONNECT
+                  </Button>
+                  <Button
+                      variant="ghost"
+                      size="sm"
+                      className="border-2 border-cyber-magenta text-cyber-magenta hover:bg-cyber-magenta hover:text-black"
+                      // Both buttons can open the same modal
+                      onClick={() => openConnectModal && openConnectModal()}
+                  >
+                    <Users className="w-4 h-4" />
+                  </Button>
+                </div>
+            )}
           </div>
         </div>
       </div>
