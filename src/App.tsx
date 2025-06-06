@@ -18,7 +18,6 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { storyAeneid } from 'wagmi/chains'; // Add any chains you need
 
 const queryClient = new QueryClient();
-
 const { connectors } = getDefaultWallets({
   appName: 'Medici',
   projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
@@ -29,6 +28,7 @@ const wagmiConfig = createConfig({
   transports: {
     [storyAeneid.id]: http(),
   },
+  connectors,
 });
 
 const App = () => (
