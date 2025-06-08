@@ -11,25 +11,12 @@ import Patents from "./pages/Patents";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
-// --- 1. Import RainbowKit, wagmi, and CSS ---
 import '@rainbow-me/rainbowkit/styles.css';
-import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createConfig, http, WagmiProvider } from 'wagmi';
-import { storyAeneid } from 'wagmi/chains'; // Add any chains you need
+import {RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import {WagmiProvider } from 'wagmi';
+import { wagmiConfig } from './contexts/RainbowKit';
 
 const queryClient = new QueryClient();
-const { connectors } = getDefaultWallets({
-  appName: 'Medici',
-  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
-});
-
-const wagmiConfig = createConfig({
-  chains: [storyAeneid],
-  transports: {
-    [storyAeneid.id]: http(),
-  },
-  connectors,
-});
 
 const App = () => (
     <QueryClientProvider client={queryClient}>
