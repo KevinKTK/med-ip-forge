@@ -1,166 +1,178 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Coins, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useStaking } from '@/hooks/useStaking';
-import { useEffect } from 'react';
-
-interface StakingPool {
-  id: number;
-  name: string;
-  assetType: string;
-  apy: number;
-  lockupPeriods: number[];
-  currentCompletion: number;
-  totalPoolSize: number;
-  availableCapacity: number;
-  riskLevel: string;
-  description: string;
-  contractAddress: string;
-}
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { StakingPool, Project } from '@/utils/supabase';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { parseEther } from 'viem';
 
 interface StakingModalProps {
   isOpen: boolean;
   onClose: () => void;
   pool: StakingPool;
+  project?: Project;
+  onStake: (amount: number, period: number) => Promise<void>;
 }
 
-export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
-  const { toast } = useToast();
-  const {
-    amount,
-    setAmount,
-    selectedLockup,
-    setSelectedLockup,
-    isStaking,
-    isSuccess,
-    calculateRewards,
-    handleStake,
-  } = useStaking(pool.contractAddress);
+const stakingABI = [
+  {
+    name: 'stake',
+    type: 'function',
+    stateMutability: 'payable',
+    inputs: [
+      { name: 'amount', type: 'uint256' },
+      { name: 'period', type: 'uint256' }
+    ],
+    outputs: [{ type: 'bool' }]
+  }
+] as const;
 
-  // Handle successful staking
+export const StakingModal = ({ isOpen, onClose, pool, project, onStake }: StakingModalProps) => {
+  const [amount, setAmount] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
+  const { isConnected, address } = useAccount();
+  const config = useConfig();
+
+  // Default lockup periods if not provided
+  const lockupPeriods = pool.lockup_periods || [30, 60, 90];
+
+  const { writeContract, data: hash } = useWriteContract({
+    mutation: {
+      onError: (error) => {
+        console.error('Staking error:', error);
+        toast.error('Failed to stake. Please try again.');
+      }
+    }
+  });
+
+  const { isLoading: isStaking, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const calculateRewards = (amount: number, period: number, apy: number) => {
+    if (!amount || !period || !apy) return 0;
+    return (amount * (apy / 100) * (period / 365));
+  };
+
+  const handleStake = async () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    if (!address) {
+      toast.error('Please connect your wallet');
+      return;
+    }
+
+    try {
+      writeContract({
+        address: pool.contract_address as `0x${string}`,
+        abi: stakingABI,
+        functionName: 'stake',
+        args: [parseEther(amount), BigInt(selectedPeriod)],
+        value: parseEther(amount),
+      });
+    } catch (error) {
+      console.error('Staking error:', error);
+      toast.error('Failed to stake. Please try again.');
+    }
+  };
+
   useEffect(() => {
     if (isSuccess) {
-      toast({
-        title: "Staking Successful!",
-        description: `Successfully staked ${amount} IP in ${pool.name}.`,
-      });
+      toast.success(`Successfully staked ${amount} IP in ${pool.name}`);
       onClose();
       setAmount('');
     }
-  }, [isSuccess, amount, pool.name, toast, onClose, setAmount]);
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-  };
+  }, [isSuccess, amount, pool.name, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/10 max-w-md">
+      <DialogContent className="glass-card border-neon">
         <DialogHeader>
-          <DialogTitle className="gradient-text text-xl">Stake in {pool.name}</DialogTitle>
+          <DialogTitle className="text-xl text-white mb-2">Stake in {pool.name}</DialogTitle>
+          <p className="text-sm text-gray-400">{pool.description}</p>
         </DialogHeader>
-        
+
         <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400 mb-2 block">Stake Amount (IP)</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
-                />
-                <span className="absolute right-3 top-3 text-gray-400">IP</span>
+          {!isConnected ? (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <p className="text-gray-400">Connect your wallet to start staking</p>
+              <ConnectButton />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="amount" className="text-white">Stake Amount (IP)</Label>
+                <div className="relative">
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Enter amount to stake"
+                    className="pr-12"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">IP</span>
+                </div>
               </div>
-              <div className="flex gap-2 mt-2">
-                {['25%', '50%', '75%', '100%'].map((percent) => (
-                  <Button
-                    key={percent}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAmount((10000 * parseInt(percent) / 100).toString())}
-                    className="text-xs"
-                  >
-                    {percent}
-                  </Button>
-                ))}
+
+              <div className="space-y-2">
+                <Label className="text-white">Lock-up Period</Label>
+                <RadioGroup
+                  value={selectedPeriod.toString()}
+                  onValueChange={(value) => setSelectedPeriod(Number(value))}
+                  className="grid grid-cols-3 gap-4"
+                >
+                  {lockupPeriods.map((period) => (
+                    <div key={period} className="relative">
+                      <RadioGroupItem
+                        value={period.toString()}
+                        id={`period-${period}`}
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor={`period-${period}`}
+                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                      >
+                        <span className="text-lg font-bold">{period}</span>
+                        <span className="text-sm text-muted-foreground">days</span>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
               </div>
-            </div>
-            
-            <div>
-              <label className="text-sm text-gray-400 mb-2 block">Lock-up Period</label>
-              <div className="grid grid-cols-2 gap-2">
-                {pool.lockupPeriods.map((period) => (
-                  <Button
-                    key={period}
-                    variant={selectedLockup === period ? "default" : "outline"}
-                    onClick={() => setSelectedLockup(period)}
-                    className={selectedLockup === period ? "bg-neon-gradient" : "neon-border"}
-                  >
-                    <Clock className="w-4 h-4 mr-1" />
-                    {period} days
-                  </Button>
-                ))}
+
+              <div className="space-y-2">
+                <Label className="text-white">Estimated Rewards</Label>
+                <div className="p-4 rounded-lg bg-black/20 border border-neon">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">APY</span>
+                    <span className="text-white font-bold">{pool.apy}%</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-gray-400">Rewards</span>
+                    <span className="text-white font-bold">
+                      {amount ? calculateRewards(Number(amount), selectedPeriod, pool.apy).toFixed(2) : '0'} IP
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <div className="bg-background/30 rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">APY</span>
-              <div className="flex items-center text-neon-blue">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                {pool.apy}%
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">Estimated Rewards</span>
-              <span className="text-white font-medium">{formatNumber(calculateRewards(pool.apy))}</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">Total Value at Maturity</span>
-              <span className="text-neon-blue font-bold">
-                {formatNumber((parseFloat(amount) || 0) + calculateRewards(pool.apy))}
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-            <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5" />
-            <div className="text-sm">
-              <p className="text-yellow-400 font-medium">Early Withdrawal Penalty</p>
-              <p className="text-gray-400">Withdrawing before the lock-up period ends may result in penalty fees.</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 neon-border"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleStake}
-              disabled={isStaking}
-              className="flex-1 bg-neon-gradient hover:opacity-90"
-            >
-              <Coins className="w-4 h-4 mr-2" />
-              {isStaking ? 'Staking...' : 'Confirm Stake'}
-            </Button>
-          </div>
+
+              <Button
+                className="w-full bg-neon-gradient hover:opacity-90"
+                onClick={handleStake}
+                disabled={isStaking || !amount || Number(amount) <= 0}
+              >
+                {isStaking ? 'Processing...' : 'Stake Now'}
+              </Button>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

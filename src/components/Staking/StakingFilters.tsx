@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -7,17 +6,17 @@ import { Filter, RotateCcw } from 'lucide-react';
 
 interface StakingFiltersProps {
   filters: {
-    assetType: string;
+    category: string;
     riskLevel: string;
     minApy: number;
     maxCompletion: number;
-    showFutureProjects: boolean;
+    showInactive: boolean;
   };
   onFiltersChange: (filters: any) => void;
 }
 
 export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps) => {
-  const assetTypes = ['All', 'Patent', 'Copyright', 'Future Copyright'];
+  const categories = ['All', 'Music', 'Visual Arts', 'Literature', 'Film', 'Fashion'];
   const riskLevels = ['All', 'Low', 'Medium', 'High'];
   
   const updateFilter = (key: string, value: any) => {
@@ -26,11 +25,11 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
 
   const resetFilters = () => {
     onFiltersChange({
-      assetType: 'All',
+      category: 'All',
       riskLevel: 'All',
       minApy: 0,
       maxCompletion: 100,
-      showFutureProjects: true
+      showInactive: false
     });
   };
 
@@ -56,17 +55,17 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
       
       <CardContent className="space-y-4">
         <div>
-          <label className="text-sm text-gray-400 mb-2 block">Asset Type</label>
+          <label className="text-sm text-gray-400 mb-2 block">Category</label>
           <div className="flex flex-wrap gap-2">
-            {assetTypes.map((type) => (
+            {categories.map((category) => (
               <Button
-                key={type}
-                variant={filters.assetType === type ? "default" : "outline"}
+                key={category}
+                variant={filters.category === category ? "default" : "outline"}
                 size="sm"
-                onClick={() => updateFilter('assetType', type)}
-                className={filters.assetType === type ? "bg-neon-gradient" : "neon-border"}
+                onClick={() => updateFilter('category', category)}
+                className={filters.category === category ? "bg-neon-gradient" : "neon-border"}
               >
-                {type}
+                {category}
               </Button>
             ))}
           </div>
@@ -113,16 +112,16 @@ export const StakingFilters = ({ filters, onFiltersChange }: StakingFiltersProps
         </div>
         
         <div className="flex items-center justify-between">
-          <label className="text-sm text-gray-400">Include Future Projects</label>
+          <label className="text-sm text-gray-400">Show Inactive Pools</label>
           <Switch
-            checked={filters.showFutureProjects}
-            onCheckedChange={(checked) => updateFilter('showFutureProjects', checked)}
+            checked={filters.showInactive}
+            onCheckedChange={(checked) => updateFilter('showInactive', checked)}
           />
         </div>
         
         <div className="pt-2">
           <Badge variant="outline" className="w-full justify-center neon-border">
-            💡 Future projects offer higher APY but carry additional risk
+            💡 Higher APY pools may carry additional risk
           </Badge>
         </div>
       </CardContent>

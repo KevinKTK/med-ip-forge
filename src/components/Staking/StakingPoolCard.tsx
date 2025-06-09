@@ -1,124 +1,126 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Clock, Shield, Coins } from 'lucide-react';
+import { StakingPool, Project } from '@/utils/supabase';
+import { useStaking } from '@/hooks/useStaking';
 import { useState } from 'react';
 import { StakingModal } from './StakingModal';
-
-interface StakingPool {
-  id: number;
-  name: string;
-  assetType: string;
-  apy: number;
-  lockupPeriods: number[];
-  currentCompletion: number;
-  totalPoolSize: number;
-  availableCapacity: number;
-  riskLevel: string;
-  description: string;
-}
+import { TrendingUp, Users, Coins } from 'lucide-react';
 
 interface StakingPoolCardProps {
   pool: StakingPool;
+  project?: Project;
+  artistName: string;
 }
 
-export const StakingPoolCard = ({ pool }: StakingPoolCardProps) => {
-  const [showStakingModal, setShowStakingModal] = useState(false);
+export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { handleStake, isStaking } = useStaking(pool.contract_address);
 
-  const getRiskColor = (risk: string) => {
+  const getRiskColor = (risk?: string) => {
+    if (!risk) return 'bg-gray-500/20 text-gray-400';
+    
     switch (risk.toLowerCase()) {
-      case 'low': return 'bg-green-500/20 text-green-400 border-green-400/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30';
-      case 'high': return 'bg-red-500/20 text-red-400 border-red-400/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-400/30';
+      case 'low':
+        return 'bg-green-500/20 text-green-400';
+      case 'medium':
+        return 'bg-yellow-500/20 text-yellow-400';
+      case 'high':
+        return 'bg-red-500/20 text-red-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
+  const completionPercentage = pool.current_completion || 
+    (project ? (project.completed_milestones / project.milestones) * 100 : 0);
+
+  const availablePercentage = pool.available_capacity && pool.total_pool_size ? 
+    (pool.available_capacity / pool.total_pool_size) * 100 : 0;
 
   return (
     <>
-      <Card className="glass-card hover:neon-glow transition-all duration-300 cursor-pointer">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
+      <Card className="glass-card hover:shadow-neon transition-all duration-300">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-lg font-bold text-white">{pool.name}</CardTitle>
-              <p className="text-sm text-gray-400 mt-1">{pool.description}</p>
+              <CardTitle className="text-xl text-white mb-1">{pool.name || 'Unnamed Pool'}</CardTitle>
+              <p className="text-sm text-gray-400">{pool.description || 'No description available'}</p>
             </div>
-            <Badge className={getRiskColor(pool.riskLevel)}>{pool.riskLevel}</Badge>
-          </div>
-          
-          <div className="flex items-center gap-4 mt-3">
-            <Badge variant="outline" className="neon-border">
-              {pool.assetType}
+            <Badge className={getRiskColor(pool.risk_level)}>
+              {pool.risk_level || 'Unknown'} Risk
             </Badge>
-            <div className="flex items-center text-neon-blue">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              <span className="font-bold">{pool.apy}% APY</span>
-            </div>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Pool Completion</span>
-              <span className="text-white font-medium">{pool.currentCompletion}%</span>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-400">APY</p>
+                <p className="text-2xl font-bold text-white">{pool.apy || 0}%</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total Pool Size</p>
+                <p className="text-2xl font-bold text-white">{pool.total_pool_size || 0} IP</p>
+              </div>
             </div>
-            <Progress value={pool.currentCompletion} className="h-2" />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-400">Total Pool Size</p>
-              <p className="text-white font-medium">{formatNumber(pool.totalPoolSize)}</p>
+            
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-400">Pool Completion</span>
+                  <span className="text-white">{completionPercentage.toFixed(1)}%</span>
+                </div>
+                <Progress value={completionPercentage} className="h-2" />
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-400">Available Capacity</span>
+                  <span className="text-white">{availablePercentage.toFixed(1)}%</span>
+                </div>
+                <Progress value={availablePercentage} className="h-2" />
+              </div>
             </div>
-            <div>
-              <p className="text-gray-400">Available</p>
-              <p className="text-neon-blue font-medium">{formatNumber(pool.availableCapacity)}</p>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-400">Lock-up Period</p>
+                <p className="text-white">{pool.lockup_periods?.[0] || 30} days</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Total Stakers</p>
+                <p className="text-white">{pool.total_stakers || 0}</p>
+              </div>
             </div>
-          </div>
-          
-          <div>
-            <p className="text-gray-400 text-sm mb-2">Lock-up Periods</p>
-            <div className="flex gap-2">
-              {pool.lockupPeriods.map((period) => (
-                <Badge key={period} variant="outline" className="text-xs">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {period}d
-                </Badge>
-              ))}
+            
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Badge variant="outline" className="neon-border">
+                {pool.asset_type || 'Unknown'}
+              </Badge>
+              <span>•</span>
+              <span>by {artistName}</span>
             </div>
-          </div>
-          
-          <div className="flex gap-2 pt-2">
-            <Button 
-              onClick={() => setShowStakingModal(true)}
-              className="flex-1 bg-neon-gradient hover:opacity-90"
+            
+            <Button
+              className="w-full bg-neon-gradient hover:opacity-90"
+              onClick={() => setIsModalOpen(true)}
+              disabled={isStaking || !pool.is_active}
             >
-              <Coins className="w-4 h-4 mr-2" />
-              Stake Now
-            </Button>
-            <Button variant="outline" className="neon-border">
-              <Shield className="w-4 h-4" />
+              {isStaking ? 'Processing...' : 'Stake Now'}
             </Button>
           </div>
         </CardContent>
       </Card>
-      
-      <StakingModal 
-        isOpen={showStakingModal}
-        onClose={() => setShowStakingModal(false)}
+
+      <StakingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         pool={pool}
+        project={project}
+        onStake={handleStake}
       />
     </>
   );

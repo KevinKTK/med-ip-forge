@@ -22,6 +22,13 @@ export interface StakingPool {
   total_stakers: number;
   is_active: boolean;
   created_at: string;
+  name: string;
+  asset_type: string;
+  current_completion: number;
+  total_pool_size: number;
+  available_capacity: number;
+  risk_level: string;
+  description: string;
 }
 
 export interface Artist {

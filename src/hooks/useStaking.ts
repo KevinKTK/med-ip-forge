@@ -24,7 +24,7 @@ export function useStaking(contractAddress: string) {
     return totalReward;
   };
 
-  const handleStake = async () => {
+  const handleStake = async (amount: string, period: number) => {
     if (!amount || parseFloat(amount) <= 0) {
       toast({
         title: "Invalid Amount",
@@ -49,7 +49,7 @@ export function useStaking(contractAddress: string) {
         abi: Staking.abi,
         address: contractAddress as `0x${string}`,
         functionName: 'stake',
-        value: parseEther(amount),
+        args: [parseEther(amount), period],
         account: address,
       });
     } catch (error) {

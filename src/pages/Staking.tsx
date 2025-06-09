@@ -1,113 +1,89 @@
-
 import { Layout } from '@/components/Layout';
 import { StakingHeader } from '@/components/Staking/StakingHeader';
 import { StakingPoolCard } from '@/components/Staking/StakingPoolCard';
 import { StakingFilters } from '@/components/Staking/StakingFilters';
 import { RewardsPanel } from '@/components/Staking/RewardsPanel';
 import { TransactionHistory } from '@/components/Staking/TransactionHistory';
-import { useState } from 'react';
-
-// Enhanced staking pools data with future copyright projects
-const stakingPools = [
-  {
-    id: 1,
-    name: "MediTech Patent Pool",
-    assetType: "Patent",
-    apy: 18.5,
-    lockupPeriods: [30, 90, 180, 365],
-    currentCompletion: 75,
-    totalPoolSize: 1000000,
-    availableCapacity: 250000,
-    riskLevel: "Medium",
-    description: "Revolutionary medical device patents",
-    isLive: true
-  },
-  {
-    id: 2,
-    name: "AI Copyright Collective",
-    assetType: "Copyright",
-    apy: 22.1,
-    lockupPeriods: [90, 180, 365],
-    currentCompletion: 45,
-    totalPoolSize: 2500000,
-    availableCapacity: 1375000,
-    riskLevel: "High",
-    description: "Next-gen AI algorithm copyrights",
-    isLive: true
-  },
-  {
-    id: 3,
-    name: "Neural Dreams Collection",
-    assetType: "Future Copyright",
-    apy: 24.5,
-    lockupPeriods: [180, 365, 730],
-    currentCompletion: 65,
-    totalPoolSize: 500000,
-    availableCapacity: 175000,
-    riskLevel: "High",
-    description: "Upcoming AI-generated artwork series by Maya Chen",
-    isLive: false,
-    artist: "Maya Chen",
-    launchDate: "2024-02-15"
-  },
-  {
-    id: 4,
-    name: "Quantum Orchestra Album",
-    assetType: "Future Copyright",
-    apy: 27.2,
-    lockupPeriods: [180, 365, 730],
-    currentCompletion: 80,
-    totalPoolSize: 750000,
-    availableCapacity: 150000,
-    riskLevel: "Medium",
-    description: "Revolutionary music album combining quantum computing",
-    isLive: false,
-    artist: "Marcus Rivera",
-    launchDate: "2024-03-01"
-  },
-  {
-    id: 5,
-    name: "Green Energy Patents",
-    assetType: "Patent",
-    apy: 15.2,
-    lockupPeriods: [30, 90, 180],
-    currentCompletion: 90,
-    totalPoolSize: 800000,
-    availableCapacity: 80000,
-    riskLevel: "Low",
-    description: "Sustainable energy technology patents",
-    isLive: true
-  },
-  {
-    id: 6,
-    name: "Entertainment IP Bundle",
-    assetType: "Copyright",
-    apy: 12.8,
-    lockupPeriods: [30, 90, 180, 365],
-    currentCompletion: 65,
-    totalPoolSize: 1500000,
-    availableCapacity: 525000,
-    riskLevel: "Low",
-    description: "Film and music copyright portfolio",
-    isLive: true
-  }
-];
+import { useState, useEffect } from 'react';
+import { supabase, StakingPool, Project, Artist } from '@/utils/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 const Staking = () => {
+  const [stakingPools, setStakingPools] = useState<StakingPool[]>([]);
+  const [projects, setProjects] = useState<Record<number, Project>>({});
+  const [artists, setArtists] = useState<Record<number, Artist>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
   const [selectedFilters, setSelectedFilters] = useState({
-    assetType: 'All',
+    category: 'All',
     riskLevel: 'All',
     minApy: 0,
     maxCompletion: 100,
-    showFutureProjects: true
+    showInactive: false
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch staking pools
+        const { data: poolsData, error: poolsError } = await supabase
+          .from('staking_pools')
+          .select('*');
+
+        if (poolsError) throw poolsError;
+
+        // Fetch projects
+        const { data: projectsData, error: projectsError } = await supabase
+          .from('projects')
+          .select('*');
+
+        if (projectsError) throw projectsError;
+
+        // Fetch artists
+        const { data: artistsData, error: artistsError } = await supabase
+          .from('artists')
+          .select('*');
+
+        if (artistsError) throw artistsError;
+
+        // Convert arrays to records for easier lookup
+        const projectsMap = (projectsData || []).reduce((acc, project) => {
+          acc[project.id] = project;
+          return acc;
+        }, {} as Record<number, Project>);
+
+        const artistsMap = (artistsData || []).reduce((acc, artist) => {
+          acc[artist.id] = artist;
+          return acc;
+        }, {} as Record<number, Artist>);
+
+        setStakingPools(poolsData || []);
+        setProjects(projectsMap);
+        setArtists(artistsMap);
+      } catch (error) {
+        toast({
+          title: "Error Loading Data",
+          description: error instanceof Error ? error.message : "Failed to load staking data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
   const filteredPools = stakingPools.filter(pool => {
-    if (selectedFilters.assetType !== 'All' && pool.assetType !== selectedFilters.assetType) return false;
-    if (selectedFilters.riskLevel !== 'All' && pool.riskLevel !== selectedFilters.riskLevel) return false;
+    const project = projects[pool.project_id];
+    if (!project) return false;
+
+    if (selectedFilters.category !== 'All' && project.category !== selectedFilters.category) return false;
+    if (selectedFilters.riskLevel !== 'All' && project.risk_level !== selectedFilters.riskLevel) return false;
     if (pool.apy < selectedFilters.minApy) return false;
-    if (pool.currentCompletion > selectedFilters.maxCompletion) return false;
-    if (!selectedFilters.showFutureProjects && !pool.isLive) return false;
+    if ((project.current_funding / project.target_funding) * 100 > selectedFilters.maxCompletion) return false;
+    if (!selectedFilters.showInactive && !pool.is_active) return false;
     return true;
   });
 
@@ -115,21 +91,46 @@ const Staking = () => {
     <Layout>
       <div className="space-y-6">
         <StakingHeader />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <StakingFilters 
+            <StakingFilters
               filters={selectedFilters}
               onFiltersChange={setSelectedFilters}
             />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredPools.map((pool) => (
-                <StakingPoolCard key={pool.id} pool={pool} />
-              ))}
-            </div>
+
+            {isLoading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400">Loading staking pools...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredPools.map((pool) => {
+                  const project = projects[pool.project_id];
+                  const artist = project ? artists[project.artist_id] : undefined;
+
+                  return (
+                    <StakingPoolCard
+                      key={pool.id}
+                      pool={{
+                        ...pool,
+                        name: project?.title || 'Unknown Project',
+                        assetType: project?.category || 'Unknown',
+                        currentCompletion: project ? (project.current_funding / project.target_funding) * 100 : 0,
+                        totalPoolSize: project?.target_funding || 0,
+                        availableCapacity: project ? project.target_funding - project.current_funding : 0,
+                        riskLevel: project?.risk_level || 'Unknown',
+                        description: project?.description || '',
+                        artist: artist?.name,
+                        launchDate: project?.created_at
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
-          
+
           <div className="space-y-6">
             <RewardsPanel />
             <TransactionHistory />

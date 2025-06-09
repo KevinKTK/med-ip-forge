@@ -64,6 +64,9 @@ const mockProjects = [
     risk_level: "Medium",
     milestones: 3,
     completed_milestones: 1,
+    status: "active",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     title: "Digital Art NFT Collection",
@@ -76,6 +79,9 @@ const mockProjects = [
     risk_level: "Low",
     milestones: 4,
     completed_milestones: 2,
+    status: "active",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     title: "Interactive Storytelling Platform",
@@ -88,11 +94,16 @@ const mockProjects = [
     risk_level: "High",
     milestones: 5,
     completed_milestones: 0,
+    status: "active",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
 const mockStakingPools = [
   {
+    name: "AI Music Staking Pool",
+    description: "Stake your IP tokens to support AI-powered music composition",
     contract_address: "0x1234567890123456789012345678901234567890",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -101,8 +112,17 @@ const mockStakingPools = [
     total_staked: 25000,
     total_stakers: 15,
     is_active: true,
+    asset_type: "IP",
+    current_completion: 33.33,
+    total_pool_size: 50000,
+    available_capacity: 25000,
+    risk_level: "Medium",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
+    name: "Digital Art Staking Pool",
+    description: "Support digital art creation with your IP tokens",
     contract_address: "0x2345678901234567890123456789012345678901",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -111,8 +131,17 @@ const mockStakingPools = [
     total_staked: 45000,
     total_stakers: 25,
     is_active: true,
+    asset_type: "IP",
+    current_completion: 50,
+    total_pool_size: 75000,
+    available_capacity: 30000,
+    risk_level: "Low",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
+    name: "Storytelling Staking Pool",
+    description: "Invest in interactive storytelling innovation",
     contract_address: "0x3456789012345678901234567890123456789012",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -121,6 +150,13 @@ const mockStakingPools = [
     total_staked: 60000,
     total_stakers: 35,
     is_active: true,
+    asset_type: "IP",
+    current_completion: 0,
+    total_pool_size: 100000,
+    available_capacity: 40000,
+    risk_level: "High",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
@@ -131,6 +167,8 @@ const mockPatents = [
     status: "Pending",
     filing_date: new Date().toISOString(),
     patent_number: "US2023000001",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     title: "Digital Art Generation with AR",
@@ -138,6 +176,8 @@ const mockPatents = [
     status: "Granted",
     filing_date: new Date().toISOString(),
     patent_number: "US2023000002",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     title: "Interactive Story Generation Platform",
@@ -145,6 +185,8 @@ const mockPatents = [
     status: "Pending",
     filing_date: new Date().toISOString(),
     patent_number: "US2023000003",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
