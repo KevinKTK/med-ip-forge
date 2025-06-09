@@ -12,14 +12,14 @@ const mockActivity: ActivityItem[] = [
     user: "0x1234...5678",
     action: "Staked",
     asset: "Beatles Discography",
-    amount: "1,500 MEDICI",
+    amount: "1,500 IP",
     time: "2m ago"
   },
   {
     user: "0xabcd...efgh",
     action: "Claimed rewards from",
     asset: "Tesla Patent #123",
-    amount: "45.2 MEDICI",
+    amount: "45.2 IP",
     time: "5m ago"
   },
   {
@@ -32,7 +32,7 @@ const mockActivity: ActivityItem[] = [
     user: "0x5555...7777",
     action: "Unstaked from",
     asset: "Netflix Originals",
-    amount: "800 MEDICI",
+    amount: "800 IP",
     time: "18m ago"
   }
 ];

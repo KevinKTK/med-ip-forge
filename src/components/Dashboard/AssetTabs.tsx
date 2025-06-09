@@ -55,20 +55,20 @@ const mockAssets = [
 
 export const AssetTabs = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'copyright' | 'patent'>('all');
-  
+
   const filteredAssets = mockAssets.filter(asset => {
     if (activeTab === 'all') return true;
     if (activeTab === 'copyright') return asset.type === 'Copyright';
     if (activeTab === 'patent') return asset.type === 'Patent';
     return true;
   });
-  
+
   const tabs = [
     { id: 'all', label: 'All Assets', count: mockAssets.length },
     { id: 'copyright', label: 'Copyright', count: mockAssets.filter(a => a.type === 'Copyright').length },
     { id: 'patent', label: 'Patent', count: mockAssets.filter(a => a.type === 'Patent').length }
   ];
-  
+
   return (
     <div className="space-y-6">
       <div className="flex space-x-6 border-b border-gray-700">
@@ -92,7 +92,7 @@ export const AssetTabs = () => {
           </button>
         ))}
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAssets.map((asset, index) => (
           <AssetCard key={index} {...asset} />

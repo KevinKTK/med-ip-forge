@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Coins, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useStaking } from '@/hooks/useStaking';
+import { useEffect } from 'react';
 
 interface StakingPool {
   id: number;
@@ -39,14 +40,16 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
   } = useStaking(pool.contractAddress);
 
   // Handle successful staking
-  if (isSuccess) {
-    toast({
-      title: "Staking Successful!",
-      description: `Successfully staked ${amount} ETH in ${pool.name}.`,
-    });
-    onClose();
-    setAmount('');
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast({
+        title: "Staking Successful!",
+        description: `Successfully staked ${amount} IP in ${pool.name}.`,
+      });
+      onClose();
+      setAmount('');
+    }
+  }, [isSuccess, amount, pool.name, toast, onClose, setAmount]);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -67,7 +70,7 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-gray-400 mb-2 block">Stake Amount (ETH)</label>
+              <label className="text-sm text-gray-400 mb-2 block">Stake Amount (IP)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -76,7 +79,7 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
                   placeholder="0.00"
                   className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
                 />
-                <span className="absolute right-3 top-3 text-gray-400">ETH</span>
+                <span className="absolute right-3 top-3 text-gray-400">IP</span>
               </div>
               <div className="flex gap-2 mt-2">
                 {['25%', '50%', '75%', '100%'].map((percent) => (
