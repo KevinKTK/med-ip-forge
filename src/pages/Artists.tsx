@@ -1,11 +1,14 @@
-
 import { Layout } from '@/components/Layout';
 import { ArtistHeader } from '@/components/Artists/ArtistHeader';
 import { ArtistFilters } from '@/components/Artists/ArtistFilters';
 import { ArtistCard } from '@/components/Artists/ArtistCard';
 import { ProjectCard } from '@/components/Artists/ProjectCard';
 import { CreateProjectModal } from '@/components/Artists/CreateProjectModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useProjects } from '@/hooks/useProjects';
+import { useStakingPoolDeployer, StakingError } from '@/utils/contractUtils';
+import { useToast } from '@/hooks/use-toast';
+import { supabase, Project, StakingPool } from '@/utils/supabase';
 
 // Mock artists data
 const artists = [
@@ -106,10 +109,45 @@ const Artists = () => {
     verified: false
   });
 
+  const { projects, stakingPools, patents, isLoading, createProject, updateProjectStakingPool, refreshProjects } = useProjects();
+  const { deployStakingPool, isDeploying } = useStakingPoolDeployer();
+  const { toast } = useToast();
+
+  const handleCreateProject = async (projectData: any) => {
+    try {
+      // Create the project in the database
+      const newProject = await createProject(projectData);
+
+      // Deploy staking pool for the project
+      const stakingPool = await deployStakingPool(
+        newProject.id,
+        15, // APY
+        [30, 60, 90] // Lockup periods in days
+      );
+
+      // Update project with staking pool reference
+      await updateProjectStakingPool(newProject.id, stakingPool.id);
+
+      // Refresh the projects list
+      await refreshProjects();
+
+      toast({
+        title: "Project Created",
+        description: "Your project and staking pool have been created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Creating Project",
+        description: error instanceof Error ? error.message : "Failed to create project",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredProjects = projects.filter(project => {
     if (selectedFilters.category !== 'All' && project.category !== selectedFilters.category) return false;
-    if (selectedFilters.riskLevel !== 'All' && project.riskLevel !== selectedFilters.riskLevel) return false;
-    if (project.targetFunding < selectedFilters.fundingRange[0] || project.targetFunding > selectedFilters.fundingRange[1]) return false;
+    if (selectedFilters.riskLevel !== 'All' && project.risk_level !== selectedFilters.riskLevel) return false;
+    if (project.target_funding < selectedFilters.fundingRange[0] || project.target_funding > selectedFilters.fundingRange[1]) return false;
     return true;
   });
 
@@ -118,6 +156,19 @@ const Artists = () => {
     if (selectedFilters.verified && !artist.verified) return false;
     return true;
   });
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-blue mx-auto"></div>
+            <p className="mt-4 text-gray-400">Loading projects...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -140,7 +191,12 @@ const Artists = () => {
             {activeTab === 'projects' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
+                  <ProjectCard 
+                    key={project.id} 
+                    project={project}
+                    stakingPool={stakingPools[project.id]}
+                    patent={patents[project.id]}
+                  />
                 ))}
               </div>
             ) : (
@@ -157,6 +213,8 @@ const Artists = () => {
       <CreateProjectModal 
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateProject}
+        isDeploying={isDeploying}
       />
     </Layout>
   );

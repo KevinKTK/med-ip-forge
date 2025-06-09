@@ -7,7 +7,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "resolveJsonModule": true, // <-- Allows importing .json files as modules
+      "esModuleInterop": true,   // <-- Improves compatibility between module formats
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,

@@ -15,7 +15,6 @@ import '@rainbow-me/rainbowkit/styles.css';
 import {RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import {WagmiProvider } from 'wagmi';
 import { wagmiConfig } from './contexts/RainbowKit';
-
 const queryClient = new QueryClient();
 
 const App = () => (

@@ -1,10 +1,9 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
 import { Coins, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useStaking } from '@/hooks/useStaking';
 
 interface StakingPool {
   id: number;
@@ -17,6 +16,7 @@ interface StakingPool {
   availableCapacity: number;
   riskLevel: string;
   description: string;
+  contractAddress: string;
 }
 
 interface StakingModalProps {
@@ -26,41 +26,27 @@ interface StakingModalProps {
 }
 
 export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
-  const [amount, setAmount] = useState('');
-  const [selectedLockup, setSelectedLockup] = useState(pool.lockupPeriods[0]);
-  const [isStaking, setIsStaking] = useState(false);
   const { toast } = useToast();
+  const {
+    amount,
+    setAmount,
+    selectedLockup,
+    setSelectedLockup,
+    isStaking,
+    isSuccess,
+    calculateRewards,
+    handleStake,
+  } = useStaking(pool.contractAddress);
 
-  const calculateRewards = () => {
-    const stakeAmount = parseFloat(amount) || 0;
-    const dailyRate = pool.apy / 365 / 100;
-    const totalReward = stakeAmount * dailyRate * selectedLockup;
-    return totalReward;
-  };
-
-  const handleStake = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid staking amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsStaking(true);
-    
-    // Simulate staking transaction
-    setTimeout(() => {
-      toast({
-        title: "Staking Successful!",
-        description: `Successfully staked $${amount} in ${pool.name} for ${selectedLockup} days.`,
-      });
-      setIsStaking(false);
-      onClose();
-      setAmount('');
-    }, 2000);
-  };
+  // Handle successful staking
+  if (isSuccess) {
+    toast({
+      title: "Staking Successful!",
+      description: `Successfully staked ${amount} ETH in ${pool.name}.`,
+    });
+    onClose();
+    setAmount('');
+  }
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -81,7 +67,7 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-gray-400 mb-2 block">Stake Amount</label>
+              <label className="text-sm text-gray-400 mb-2 block">Stake Amount (ETH)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -90,7 +76,7 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
                   placeholder="0.00"
                   className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
                 />
-                <span className="absolute right-3 top-3 text-gray-400">USD</span>
+                <span className="absolute right-3 top-3 text-gray-400">ETH</span>
               </div>
               <div className="flex gap-2 mt-2">
                 {['25%', '50%', '75%', '100%'].map((percent) => (
@@ -136,13 +122,13 @@ export const StakingModal = ({ isOpen, onClose, pool }: StakingModalProps) => {
             
             <div className="flex items-center justify-between">
               <span className="text-gray-400">Estimated Rewards</span>
-              <span className="text-white font-medium">{formatNumber(calculateRewards())}</span>
+              <span className="text-white font-medium">{formatNumber(calculateRewards(pool.apy))}</span>
             </div>
             
             <div className="flex items-center justify-between">
               <span className="text-gray-400">Total Value at Maturity</span>
               <span className="text-neon-blue font-bold">
-                {formatNumber((parseFloat(amount) || 0) + calculateRewards())}
+                {formatNumber((parseFloat(amount) || 0) + calculateRewards(pool.apy))}
               </span>
             </div>
           </div>
