@@ -24,10 +24,25 @@ export interface StakingPool {
   created_at: string;
 }
 
+export interface Artist {
+  id: number;
+  name: string;
+  avatar: string;
+  genre: string;
+  verified: boolean;
+  total_raised: number;
+  completed_projects: number;
+  followers: number;
+  rating: number;
+  current_project: string;
+  bio: string;
+  created_at: string;
+}
+
 export interface Project {
   id: number;
   title: string;
-  artist: string;
+  artist_id: number;
   category: string;
   target_funding: number;
   current_funding: number;

@@ -13,10 +13,48 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const mockArtists = [
+  {
+    name: "Sarah Chen",
+    avatar: "/placeholder.svg",
+    genre: "Music",
+    verified: true,
+    total_raised: 125000,
+    completed_projects: 3,
+    followers: 2400,
+    rating: 4.8,
+    current_project: "AI-Powered Music Composition",
+    bio: "Creating immersive digital experiences that blend reality with imagination"
+  },
+  {
+    name: "Marcus Rodriguez",
+    avatar: "/placeholder.svg",
+    genre: "Visual Arts",
+    verified: true,
+    total_raised: 89000,
+    completed_projects: 5,
+    followers: 5600,
+    rating: 4.9,
+    current_project: "Digital Art NFT Collection",
+    bio: "Composer pushing boundaries between classical music and AI-generated melodies"
+  },
+  {
+    name: "Emma Thompson",
+    avatar: "/placeholder.svg",
+    genre: "Literature",
+    verified: false,
+    total_raised: 45000,
+    completed_projects: 1,
+    followers: 890,
+    rating: 4.6,
+    current_project: "Interactive Storytelling Platform",
+    bio: "Independent filmmaker documenting cultural transformation in urban environments"
+  }
+];
+
 const mockProjects = [
   {
     title: "AI-Powered Music Composition",
-    artist: "Sarah Chen",
     category: "Music",
     target_funding: 50000,
     current_funding: 25000,
@@ -29,7 +67,6 @@ const mockProjects = [
   },
   {
     title: "Digital Art NFT Collection",
-    artist: "Marcus Rodriguez",
     category: "Visual Arts",
     target_funding: 75000,
     current_funding: 45000,
@@ -42,7 +79,6 @@ const mockProjects = [
   },
   {
     title: "Interactive Storytelling Platform",
-    artist: "Emma Thompson",
     category: "Literature",
     target_funding: 100000,
     current_funding: 60000,
@@ -57,7 +93,6 @@ const mockProjects = [
 
 const mockStakingPools = [
   {
-    project_id: 1,
     contract_address: "0x1234567890123456789012345678901234567890",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -68,7 +103,6 @@ const mockStakingPools = [
     is_active: true,
   },
   {
-    project_id: 2,
     contract_address: "0x2345678901234567890123456789012345678901",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -79,7 +113,6 @@ const mockStakingPools = [
     is_active: true,
   },
   {
-    project_id: 3,
     contract_address: "0x3456789012345678901234567890123456789012",
     deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
     deployment_date: new Date().toISOString(),
@@ -93,7 +126,6 @@ const mockStakingPools = [
 
 const mockPatents = [
   {
-    project_id: 1,
     title: "AI Music Composition System",
     description: "A system for generating music based on emotional inputs using machine learning",
     status: "Pending",
@@ -101,7 +133,6 @@ const mockPatents = [
     patent_number: "US2023000001",
   },
   {
-    project_id: 2,
     title: "Digital Art Generation with AR",
     description: "Method for creating and displaying digital art with augmented reality features",
     status: "Granted",
@@ -109,7 +140,6 @@ const mockPatents = [
     patent_number: "US2023000002",
   },
   {
-    project_id: 3,
     title: "Interactive Story Generation Platform",
     description: "System for creating branching narrative structures with user interaction",
     status: "Pending",
@@ -120,27 +150,51 @@ const mockPatents = [
 
 async function seedDatabase() {
   try {
-    // Insert projects
+    // Insert artists first
+    const { data: artists, error: artistsError } = await supabase
+      .from('artists')
+      .insert(mockArtists)
+      .select();
+
+    if (artistsError) throw artistsError;
+    console.log('Artists seeded successfully');
+
+    // Insert projects with artist_id
+    const projectsWithArtists = mockProjects.map((project, index) => ({
+      ...project,
+      artist_id: artists[index].id
+    }));
+
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
-      .insert(mockProjects)
+      .insert(projectsWithArtists)
       .select();
 
     if (projectsError) throw projectsError;
     console.log('Projects seeded successfully');
 
-    // Insert staking pools
+    // Insert staking pools with project_id
+    const stakingPoolsWithProjects = mockStakingPools.map((pool, index) => ({
+      ...pool,
+      project_id: projects[index].id
+    }));
+
     const { error: poolsError } = await supabase
       .from('staking_pools')
-      .insert(mockStakingPools);
+      .insert(stakingPoolsWithProjects);
 
     if (poolsError) throw poolsError;
     console.log('Staking pools seeded successfully');
 
-    // Insert patents
+    // Insert patents with project_id
+    const patentsWithProjects = mockPatents.map((patent, index) => ({
+      ...patent,
+      project_id: projects[index].id
+    }));
+
     const { error: patentsError } = await supabase
       .from('patents')
-      .insert(mockPatents);
+      .insert(patentsWithProjects);
 
     if (patentsError) throw patentsError;
     console.log('Patents seeded successfully');
