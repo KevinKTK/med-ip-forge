@@ -20,11 +20,11 @@ interface ProjectCardProps {
 
 export const ProjectCard = ({ project, artistName, stakingPool, patent }: ProjectCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { handleStake, isStaking } = useStaking(stakingPool?.contract_address || '');
+  const { handleStake, isStaking, totalStakedOnChain } = useStaking(project.id);
   const { isConnected } = useAccount();
 
   const completionPercentage = (project.completed_milestones / project.milestones) * 100;
-  const fundingPercentage = (project.current_funding / project.target_funding) * 100;
+  const fundingPercentage = ((project.current_funding + totalStakedOnChain) / project.target_funding) * 100;
 
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
@@ -39,18 +39,16 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatIP = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+      maximumFractionDigits: 2,
+    }).format(amount) + ' IP';
   };
 
-  const handleStakeClick = async (amount: number, period: number) => {
+  const handleStakeClick = async (amount: string) => {
     if (!stakingPool) return;
-    await handleStake(amount, period);
+    await handleStake(amount);
   };
 
   return (
@@ -67,29 +65,26 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-400">Target Funding</p>
-                <p className="text-2xl font-bold text-white">{project.target_funding} IP</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Funding Progress</span>
+                <span className="text-white">{fundingPercentage.toFixed(1)}%</span>
               </div>
-              <div>
-                <p className="text-sm text-gray-400">Current Funding</p>
-                <p className="text-2xl font-bold text-white">{project.current_funding} IP</p>
+              <Progress value={fundingPercentage} className="h-2" />
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-400">Current Funding</span>
+                <span className="text-2xl font-bold text-white">{formatIP(project.current_funding+ totalStakedOnChain)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-400">Target Funding</span>
+                <span className="text-2xl font-bold text-white">{formatIP(project.target_funding)}</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">Funding Progress</span>
-                  <span className="text-white">{fundingPercentage.toFixed(1)}%</span>
-                </div>
-                <Progress value={fundingPercentage} className="h-2" />
-              </div>
-              
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Project Progress</span>
@@ -98,7 +93,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 <Progress value={completionPercentage} className="h-2" />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-400">Staking APY</p>
@@ -109,7 +104,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 <p className="text-white">{project.time_remaining}</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Badge variant="outline" className="neon-border">
                 {project.category}
@@ -117,9 +112,12 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
               <span>•</span>
               <span>by {artistName}</span>
             </div>
-            
+
             {!isConnected ? (
-              <ConnectButton />
+              <div className="flex flex-col items-center gap-4 py-4">
+                <p className="text-gray-400">Connect your wallet to start staking</p>
+                <ConnectButton />
+              </div>
             ) : (
               <Button
                 className="w-full bg-neon-gradient hover:opacity-90"
@@ -137,9 +135,8 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
         <StakingModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          pool={stakingPool}
+          stakingPool={stakingPool}
           project={project}
-          onStake={handleStakeClick}
         />
       )}
     </>

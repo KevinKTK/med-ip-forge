@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useWriteContract, useTransaction, useAccount, useConfig } from 'wagmi';
+import { useWriteContract, useTransaction, useAccount, useConfig, useReadContract } from 'wagmi';
 import { toast } from 'sonner';
 import { stakingABI } from '@/utils/contracts';
 import { useStakingPool } from './useStakingPool';
 import { supabase } from '@/utils/supabase';
-import { parseEther } from 'viem';
+import { parseEther, formatEther } from 'viem';
 
 export const useStaking = (projectId: number) => {
   const [amount, setAmount] = useState('');
@@ -16,6 +16,13 @@ export const useStaking = (projectId: number) => {
   const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isStaking, isSuccess } = useTransaction({
     hash,
+  });
+
+  // Read total staked amount from the contract
+  const { data: totalStakedOnChain } = useReadContract({
+    address: stakingPool?.contract_address as `0x${string}`,
+    abi: stakingABI,
+    functionName: 'totalStaked',
   });
 
   useEffect(() => {
@@ -38,7 +45,11 @@ export const useStaking = (projectId: number) => {
           if (fetchError) throw fetchError;
           if (!currentPool) throw new Error("Staking pool not found in database.");
 
-          const newTotalStaked = (currentPool.total_staked || 0) + parsedAmount;
+          // Get the on-chain total staked amount
+          const onChainTotalStaked = totalStakedOnChain ? Number(formatEther(totalStakedOnChain)) : 0;
+          
+          // Calculate new totals combining on-chain and Supabase data
+          const newTotalStaked = onChainTotalStaked;
           // For simplicity, increment stakers by 1. A more robust solution might check if the address is new.
           const newTotalStakers = (currentPool.total_stakers || 0) + 1;
 
@@ -52,6 +63,10 @@ export const useStaking = (projectId: number) => {
 
           if (updateError) throw updateError;
 
+          // Project's current funding is now treated as a constant initial amount.
+          // The UI will sum this constant with the on-chain staked amount.
+          // Therefore, we no longer update current_funding in the database here.
+
           toast.success(`Successfully staked ${amount} IP in ${stakingPool.name}. Total staked: ${newTotalStaked.toFixed(2)} IP`);
           // Refresh the staking pool data in the hook to reflect changes immediately
           refreshStakingPool();
@@ -64,7 +79,7 @@ export const useStaking = (projectId: number) => {
       };
       updateSupabase();
     }
-  }, [isSuccess, stakingPool, amount, refreshStakingPool]);
+  }, [isSuccess, stakingPool, amount, refreshStakingPool, totalStakedOnChain, projectId]);
 
   const calculateRewards = (apy: number) => {
     if (!amount || !apy) return 0;
@@ -110,5 +125,6 @@ export const useStaking = (projectId: number) => {
     handleStake,
     stakingPool,
     isLoading,
+    totalStakedOnChain: totalStakedOnChain ? Number(formatEther(totalStakedOnChain)) : 0,
   };
 };
