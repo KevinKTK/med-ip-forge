@@ -6,13 +6,13 @@ import { StakingFilters } from '@/components/Staking/StakingFilters';
 import { RewardsPanel } from '@/components/Staking/RewardsPanel';
 import { TransactionHistory } from '@/components/Staking/TransactionHistory';
 import { useState, useEffect } from 'react';
-import { supabase, StakingPool, Project, Artist } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const Staking = () => {
-  const [stakingPools, setStakingPools] = useState<StakingPool[]>([]);
-  const [projects, setProjects] = useState<Record<number, Project>>({});
-  const [artists, setArtists] = useState<Record<number, Artist>>({});
+  const [stakingPools, setStakingPools] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Record<number, any>>({});
+  const [artists, setArtists] = useState<Record<number, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -52,12 +52,12 @@ const Staking = () => {
         const projectsMap = (projectsData || []).reduce((acc, project) => {
           acc[project.id] = project;
           return acc;
-        }, {} as Record<number, Project>);
+        }, {} as Record<number, any>);
 
         const artistsMap = (artistsData || []).reduce((acc, artist) => {
           acc[artist.id] = artist;
           return acc;
-        }, {} as Record<number, Artist>);
+        }, {} as Record<number, any>);
 
         setStakingPools(poolsData || []);
         setProjects(projectsMap);

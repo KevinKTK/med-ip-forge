@@ -1,6 +1,22 @@
+
 import { useState, useEffect } from 'react';
-import { supabase, Artist } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+interface Artist {
+  id: number;
+  name: string;
+  avatar: string;
+  genre: string;
+  verified: boolean;
+  total_raised: number;
+  completed_projects: number;
+  followers: number;
+  rating: number;
+  current_project: string;
+  bio: string;
+  created_at: string;
+}
 
 export function useArtists() {
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -95,4 +111,4 @@ export function useArtists() {
     getArtistById,
     refreshArtists: fetchArtists,
   };
-} 
+}

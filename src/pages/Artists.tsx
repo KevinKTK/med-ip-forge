@@ -10,7 +10,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useStakingPoolDeployer, StakingError } from '@/utils/contractUtils';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, Project, StakingPool } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock artists data
 const artists = [

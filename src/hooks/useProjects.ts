@@ -1,6 +1,55 @@
+
 import { useState, useEffect } from 'react';
-import { supabase, Project, StakingPool, Patent } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+interface Project {
+  id: number;
+  title: string;
+  artist_id: number;
+  category: string;
+  target_funding: number;
+  current_funding: number;
+  staking_apy: number;
+  time_remaining: string;
+  description: string;
+  risk_level: string;
+  milestones: number;
+  completed_milestones: number;
+  created_at: string;
+  staking_pool_id?: number;
+}
+
+interface StakingPool {
+  id: number;
+  project_id: number;
+  contract_address: string;
+  deployer_address: string;
+  deployment_date: string;
+  apy: number;
+  lockup_periods: number[];
+  total_staked: number;
+  total_stakers: number;
+  is_active: boolean;
+  created_at: string;
+  name: string;
+  asset_type: string;
+  current_completion: number;
+  total_pool_size: number;
+  available_capacity: number;
+  risk_level: string;
+  description: string;
+}
+
+interface Patent {
+  id: number;
+  project_id: number;
+  title: string;
+  description: string;
+  status: 'Pending' | 'Granted' | 'Rejected';
+  filing_date: string;
+  patent_number: string;
+}
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -106,4 +155,4 @@ export function useProjects() {
     updateProjectStakingPool,
     refreshProjects: fetchProjects,
   };
-} 
+}

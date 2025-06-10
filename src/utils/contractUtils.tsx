@@ -1,9 +1,8 @@
-
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
-import { supabase, StakingPool } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { storyTestnet } from 'wagmi/chains';
 
 export class StakingError extends Error {
@@ -68,7 +67,6 @@ export function useStakingPoolDeployer() {
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
         account: walletClient.account,
         chain: storyTestnet,
-        type: 'eip1559',
       });
 
       // Wait for the transaction to be confirmed
@@ -122,7 +120,7 @@ export function useStakingPoolDeployer() {
     }
   };
 
-  const getStakingPool = async (projectId: number): Promise<StakingPool | null> => {
+  const getStakingPool = async (projectId: number) => {
     try {
       const { data, error } = await supabase
         .from('staking_pools')
@@ -148,8 +146,8 @@ export function useStakingPoolDeployer() {
 
   const updateStakingPool = async (
     projectId: number,
-    updates: Partial<StakingPool>
-  ): Promise<StakingPool> => {
+    updates: any
+  ) => {
     try {
       const { data, error } = await supabase
         .from('staking_pools')
