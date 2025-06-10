@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // These are public keys and safe to use in frontend
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables. Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
@@ -73,4 +73,4 @@ export interface Patent {
   status: 'Pending' | 'Granted' | 'Rejected';
   filing_date: string;
   patent_number: string;
-} 
+}

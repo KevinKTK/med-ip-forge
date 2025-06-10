@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useWriteContract, useWaitForTransactionReceipt, useAccount, useConfig } from 'wagmi';
 import { parseEther } from 'viem';
@@ -71,4 +72,4 @@ export function useStaking(contractAddress: string) {
     calculateRewards,
     handleStake,
   };
-} 
+}

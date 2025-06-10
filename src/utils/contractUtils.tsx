@@ -1,28 +1,3 @@
-/*import 'dotenv/config';
-import {ethers, Wallet, ContractFactory} from 'ethers';
-import Staking from '@/contracts/Staking.json';
-
-async function main() {
-
-    const provider = new ethers.JsonRpcProvider(process.env.RPC_PROVIDER_URL);
-    const privateKey = process.env.WALLET_PRIVATE_KEY;
-    console.log("Loaded WALLET_PRIVATE_KEY:", privateKey);
-    if (!privateKey) {
-        throw new Error("WALLET_PRIVATE_KEY is not defined in your .env file!");
-    }
-    const wallet = new Wallet(privateKey, provider);
-
-    const factory = new ContractFactory(Staking.abi, Staking.bytecode, wallet);
-// If your contract requires constructor args, you can specify them here
-    const deployedContract = await factory.deploy(15);
-    const contractAddress = await deployedContract.getAddress();
-
-    console.log(contractAddress);
-    console.log(deployedContract.deploymentTransaction());
-
-    const contract = new ethers.Contract(contractAddress, Staking.abi, provider);
-}*/
-
 
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
@@ -45,9 +20,6 @@ interface ProjectStakingPool {
   apy: number;
   lockupPeriods: number[];
 }
-
-// In-memory storage for deployed contracts (replace with your database later)
-let deployedPools: ProjectStakingPool[] = [];
 
 export function useStakingPoolDeployer() {
   const { data: walletClient } = useWalletClient();
@@ -92,12 +64,12 @@ export function useStakingPoolDeployer() {
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [apy],
+        args: [BigInt(apy)],
         account: walletClient.account,
       });
 
       // Wait for the transaction to be confirmed
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await publicClient!.waitForTransactionReceipt({ hash });
 
       if (!receipt.contractAddress) {
         throw new StakingError("Deployment failed: contract address not found", "DEPLOYMENT_FAILED");
