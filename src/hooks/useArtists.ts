@@ -66,7 +66,7 @@ export function useArtists() {
     }
   };
 
-  const updateArtist = async (artistId: number, updates: Partial<Artist>) => {
+  const updateArtist = async (artistId: number, updates: Omit<Partial<Artist>, 'id'>) => {
     try {
       const { data: updatedArtist, error: updateError } = await supabase
         .from('artists')

@@ -91,9 +91,12 @@ export function useProjects() {
 
       if (patentsError) throw patentsError;
 
-      // Create a map of project ID to patent
+      // Create a map of project ID to patent with proper type casting
       const patentsMap = (patentsData || []).reduce((acc, patent) => {
-        acc[patent.project_id] = patent;
+        acc[patent.project_id] = {
+          ...patent,
+          status: patent.status as 'Pending' | 'Granted' | 'Rejected'
+        };
         return acc;
       }, {} as Record<number, Patent>);
 

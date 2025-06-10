@@ -1,3 +1,4 @@
+
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
@@ -60,13 +61,12 @@ export function useStakingPoolDeployer() {
       const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
-      // Deploy the contract with project-specific parameters
+      // Deploy the contract with explicit type to avoid EIP-7702 requirements
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
-        account: walletClient.account,
-        chain: storyTestnet,
+        type: 'eip1559'
       });
 
       // Wait for the transaction to be confirmed
@@ -76,7 +76,7 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Deployment failed: contract address not found", "DEPLOYMENT_FAILED");
       }
 
-      // Store the deployed contract information in Supabase
+      // Store the deployed contract information in Supabase with all required fields
       const { data: newPool, error: dbError } = await supabase
         .from('staking_pools')
         .insert({
@@ -89,6 +89,13 @@ export function useStakingPoolDeployer() {
           total_staked: 0,
           total_stakers: 0,
           is_active: true,
+          name: `Project ${projectId} Staking Pool`,
+          description: `Staking pool for project ${projectId}`,
+          risk_level: 'Medium',
+          asset_type: 'IP',
+          current_completion: 0,
+          total_pool_size: 1000000,
+          available_capacity: 1000000,
         })
         .select()
         .single();
