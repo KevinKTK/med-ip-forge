@@ -16,7 +16,7 @@ interface StakingPoolCardProps {
 
 export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { handleStake, isStaking } = useStaking(pool.contract_address);
+  const { handleStake, isStaking } = useStaking(pool.project_id);
 
   const getRiskColor = (risk?: string) => {
     if (!risk) return 'bg-gray-500/20 text-gray-400';
@@ -118,9 +118,8 @@ export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardPr
       <StakingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        pool={pool}
+        stakingPool={pool}
         project={project}
-        onStake={handleStake}
       />
     </>
   );
