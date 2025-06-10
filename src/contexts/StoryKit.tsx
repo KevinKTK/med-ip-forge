@@ -1,36 +1,35 @@
-
 import { http } from "viem";
-import { Account, privateKeyToAccount, Address } from "viem/accounts";
-import { StoryClient, StoryConfig } from "@story-protocol/core-sdk";
+import { Account } from "viem/accounts";
+import { StoryClient, StoryConfig, SupportedChainIds } from "@story-protocol/core-sdk";
 import { storyAeneid } from "wagmi/chains";
-import { supabase } from "@/utils/supabase";
+import { getApiKeys } from "@/utils/supabase";
 
-// Function to get Story Protocol configuration from Supabase secrets
-const getStoryConfig = async (): Promise<StoryConfig> => {
+// Function to get Story Protocol RPC configuration
+const getStoryRpcConfig = async (): Promise<{ transport: StoryConfig['transport'], chainId: SupportedChainIds }> => {
   try {
-    // Call Supabase edge function to get the configuration with secrets
-    const { data, error } = await supabase.functions.invoke('get-story-config');
-    
-    if (error) throw error;
-    
-    const privateKey: Address = `0x${data.walletPrivateKey}`;
-    const account: Account = privateKeyToAccount(privateKey);
+    const apiKeys = await getApiKeys();
 
-    const config: StoryConfig = {
-      account: account,
-      transport: http(data.rpcProviderUrl),
-      chainId: storyAeneid.id
+    if (!apiKeys) {
+      throw new Error('Failed to fetch API keys from Supabase.');
+    }
+
+    return {
+      transport: http(apiKeys.RPC_PROVIDER_URL),
+      chainId: storyAeneid.id as SupportedChainIds
     };
-    
-    return config;
   } catch (error) {
-    console.error('Failed to get Story config from Supabase secrets:', error);
-    throw new Error('Story Protocol configuration failed');
+    console.error('Failed to get Story RPC config from Supabase secrets:', error);
+    throw new Error('Story Protocol RPC configuration failed');
   }
 };
 
-// Export a function that returns the client after configuration
-export const getStoryClient = async () => {
-  const config = await getStoryConfig();
+// Export a function that returns the client after configuration, accepting the account
+export const getStoryClient = async (account: Account) => {
+  const { transport, chainId } = await getStoryRpcConfig();
+  const config: StoryConfig = {
+    account: account,
+    transport: transport,
+    chainId: chainId
+  };
   return StoryClient.newClient(config);
 };

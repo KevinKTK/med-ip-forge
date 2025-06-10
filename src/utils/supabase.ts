@@ -1,15 +1,35 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // These are public keys and safe to use in frontend
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey = import.meta.env.VITE_SUPABASE_API;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables. Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
+export interface ApiKeys {
+  VITE_WALLETCONNECT_PROJECT_ID: string;
+  VITE_WEB3AUTH_CLIENT_ID: string;
+  RPC_PROVIDER_URL: string;
+  VITE_PUBLIC_PINATA: string;
+}
+
+export async function getApiKeys(): Promise<ApiKeys | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('get-api-keys');
+    if (error) {
+      console.error('Error invoking get-api-keys function:', error);
+      return null;
+    }
+    return data as ApiKeys;
+  } catch (error) {
+    console.error('Unexpected error while fetching API keys:', error);
+    return null;
+  }
+}
 
 // Database types
 export interface StakingPool {

@@ -1,20 +1,21 @@
-
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { createConfig, http } from 'wagmi';
 import { storyAeneid } from 'wagmi/chains';
-import { supabase } from "@/utils/supabase";
+import { getApiKeys } from "@/utils/supabase";
 
 // Function to get RainbowKit configuration from Supabase secrets
 const getRainbowKitConfig = async () => {
   try {
-    const { data, error } = await supabase.functions.invoke('get-walletconnect-config');
-    
-    if (error) throw error;
-    
+    const apiKeys = await getApiKeys();
+
+    if (!apiKeys) {
+      throw new Error('Failed to fetch API keys from Supabase.');
+    }
+
     const { connectors } = getDefaultWallets({
       appName: 'Medici',
-      projectId: data.walletConnectProjectId,
+      projectId: apiKeys.VITE_WALLETCONNECT_PROJECT_ID,
     });
 
     return createConfig({
