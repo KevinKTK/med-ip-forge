@@ -68,6 +68,7 @@ export function useStakingPoolDeployer() {
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
         account: walletClient.account,
         chain: storyTestnet,
+        type: 'eip1559',
       });
 
       // Wait for the transaction to be confirmed
