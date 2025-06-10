@@ -113,16 +113,7 @@ const Staking = () => {
                   return (
                     <StakingPoolCard
                       key={pool.id}
-                      pool={{
-                        ...pool,
-                        name: project?.title || 'Unknown Project',
-                        asset_type: project?.category || 'Unknown',
-                        current_completion: project ? (project.current_funding / project.target_funding) * 100 : 0,
-                        total_pool_size: project?.target_funding || 0,
-                        available_capacity: project ? project.target_funding - project.current_funding : 0,
-                        risk_level: project?.risk_level || 'Unknown',
-                        description: project?.description || '',
-                      }}
+                      pool={pool}
                       project={project}
                       artistName={artist?.name || 'Unknown Artist'}
                     />

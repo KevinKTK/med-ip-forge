@@ -9,15 +9,8 @@ import { useState } from 'react';
 import { StakingModal } from './StakingModal';
 import { TrendingUp, Users, Coins } from 'lucide-react';
 
-interface ExtendedStakingPool extends StakingPool {
-  name?: string;
-  current_completion?: number;
-  total_pool_size?: number;
-  available_capacity?: number;
-}
-
 interface StakingPoolCardProps {
-  pool: ExtendedStakingPool;
+  pool: StakingPool;
   project?: Project;
   artistName: string;
 }
@@ -53,11 +46,11 @@ export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardPr
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl text-white mb-1">{pool.name || 'Unnamed Pool'}</CardTitle>
-              <p className="text-sm text-gray-400">{pool.description || 'No description available'}</p>
+              <CardTitle className="text-xl text-white mb-1">{pool.name}</CardTitle>
+              <p className="text-sm text-gray-400">{pool.description}</p>
             </div>
             <Badge className={getRiskColor(pool.risk_level)}>
-              {pool.risk_level || 'Unknown'} Risk
+              {pool.risk_level} Risk
             </Badge>
           </div>
         </CardHeader>
@@ -67,11 +60,11 @@ export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardPr
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-gray-400">APY</p>
-                <p className="text-2xl font-bold text-white">{pool.apy || 0}%</p>
+                <p className="text-2xl font-bold text-white">{pool.apy}%</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Total Pool Size</p>
-                <p className="text-2xl font-bold text-white">{pool.total_pool_size || 0} IP</p>
+                <p className="text-2xl font-bold text-white">{pool.total_pool_size} IP</p>
               </div>
             </div>
             
@@ -100,13 +93,13 @@ export const StakingPoolCard = ({ pool, project, artistName }: StakingPoolCardPr
               </div>
               <div>
                 <p className="text-gray-400">Total Stakers</p>
-                <p className="text-white">{pool.total_stakers || 0}</p>
+                <p className="text-white">{pool.total_stakers}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Badge variant="outline" className="neon-border">
-                {pool.asset_type || 'Unknown'}
+                {pool.asset_type}
               </Badge>
               <span>•</span>
               <span>by {artistName}</span>

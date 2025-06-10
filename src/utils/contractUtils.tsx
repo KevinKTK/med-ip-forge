@@ -1,10 +1,10 @@
 
-
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
 import { supabase, StakingPool } from './supabase';
+import { storyTestnet } from 'wagmi/chains';
 
 export class StakingError extends Error {
   constructor(message: string, public code: string) {
@@ -67,6 +67,7 @@ export function useStakingPoolDeployer() {
         bytecode: stakingBytecode,
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
         account: walletClient.account,
+        chain: storyTestnet,
       });
 
       // Wait for the transaction to be confirmed
