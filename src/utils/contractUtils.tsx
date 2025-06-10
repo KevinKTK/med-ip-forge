@@ -1,4 +1,5 @@
 
+
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
@@ -57,14 +58,14 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Project already has a staking pool", "POOL_EXISTS");
       }
 
-      const stakingAbi = Staking.abi;
+      const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
       // Deploy the contract with project-specific parameters
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [BigInt(apy)],
+        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
         account: walletClient.account,
       });
 

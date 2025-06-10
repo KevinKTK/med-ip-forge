@@ -1,3 +1,4 @@
+
 import { Layout } from '@/components/Layout';
 import { StakingHeader } from '@/components/Staking/StakingHeader';
 import { StakingPoolCard } from '@/components/Staking/StakingPoolCard';
@@ -115,15 +116,15 @@ const Staking = () => {
                       pool={{
                         ...pool,
                         name: project?.title || 'Unknown Project',
-                        assetType: project?.category || 'Unknown',
-                        currentCompletion: project ? (project.current_funding / project.target_funding) * 100 : 0,
-                        totalPoolSize: project?.target_funding || 0,
-                        availableCapacity: project ? project.target_funding - project.current_funding : 0,
-                        riskLevel: project?.risk_level || 'Unknown',
+                        asset_type: project?.category || 'Unknown',
+                        current_completion: project ? (project.current_funding / project.target_funding) * 100 : 0,
+                        total_pool_size: project?.target_funding || 0,
+                        available_capacity: project ? project.target_funding - project.current_funding : 0,
+                        risk_level: project?.risk_level || 'Unknown',
                         description: project?.description || '',
-                        artist: artist?.name,
-                        launchDate: project?.created_at
                       }}
+                      project={project}
+                      artistName={artist?.name || 'Unknown Artist'}
                     />
                   );
                 })}

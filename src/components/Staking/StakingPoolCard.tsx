@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +9,15 @@ import { useState } from 'react';
 import { StakingModal } from './StakingModal';
 import { TrendingUp, Users, Coins } from 'lucide-react';
 
+interface ExtendedStakingPool extends StakingPool {
+  name?: string;
+  current_completion?: number;
+  total_pool_size?: number;
+  available_capacity?: number;
+}
+
 interface StakingPoolCardProps {
-  pool: StakingPool;
+  pool: ExtendedStakingPool;
   project?: Project;
   artistName: string;
 }
