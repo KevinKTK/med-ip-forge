@@ -1,5 +1,3 @@
-
-
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
@@ -62,13 +60,11 @@ export function useStakingPoolDeployer() {
       const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
-      // Deploy the contract with explicit type and chain to avoid EIP-7702 requirements
+      // Deploy the contract with simplified parameters
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
-        type: 'eip1559',
-        chain: storyTestnet
+        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)]
       });
 
       // Wait for the transaction to be confirmed
