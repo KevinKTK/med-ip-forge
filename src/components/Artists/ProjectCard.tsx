@@ -153,9 +153,9 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Project Progress</span>
-                  <span className="text-white">{completionPercentage.toFixed(1)}%</span>
+                  <span className="text-white">{fundingPercentage.toFixed(1)}%</span>
                 </div>
-                <Progress value={completionPercentage} className="h-2" />
+                <Progress value={fundingPercentage} className="h-2" />
               </div>
             </div>
 
