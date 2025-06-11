@@ -1,10 +1,9 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from 'wagmi';
@@ -29,6 +28,33 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
   const { toast } = useToast();
   const { isConnected } = useAccount();
 
+  const [artistOption, setArtistOption] = useState<'new' | 'existing'>('new');
+  const [newArtistName, setNewArtistName] = useState('');
+  const [selectedArtistId, setSelectedArtistId] = useState<string | undefined>(undefined);
+  const [existingArtists, setExistingArtists] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchArtists = async () => {
+      const { data, error } = await supabase
+        .from('artists')
+        .select('id, name');
+      if (error) {
+        console.error('Error fetching artists:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load existing artists.",
+          variant: "destructive",
+        });
+      } else {
+        setExistingArtists(data);
+        if (data.length > 0 && !selectedArtistId) {
+          setSelectedArtistId(data[0].id);
+        }
+      }
+    };
+    fetchArtists();
+  }, [toast, selectedArtistId]);
+
   const validateForm = () => {
     if (!formData.title.trim()) {
       toast({
@@ -38,10 +64,10 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
       });
       return false;
     }
-    
+
     if (!formData.category) {
       toast({
-        title: "Validation Error", 
+        title: "Validation Error",
         description: "Please select a category",
         variant: "destructive",
       });
@@ -80,55 +106,9 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
     return true;
   };
 
-  const getCurrentUserArtist = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error("No authenticated user found");
-      }
-
-      // Try to find existing artist for this user
-      const { data: artist, error: artistError } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('name', user.email) // Using email as a fallback identifier
-        .single();
-
-      if (artistError && artistError.code !== 'PGRST116') { // PGRST116 is "not found"
-        throw artistError;
-      }
-
-      if (artist) {
-        return artist.id;
-      }
-
-      // Create a new artist profile if none exists
-      const { data: newArtist, error: createError } = await supabase
-        .from('artists')
-        .insert({
-          name: user.email?.split('@')[0] || 'Unknown Artist',
-          genre: 'General',
-          verified: false,
-          bio: 'New artist on the platform',
-        })
-        .select('id')
-        .single();
-
-      if (createError) {
-        throw createError;
-      }
-
-      return newArtist.id;
-    } catch (error) {
-      console.error('Error getting/creating artist:', error);
-      throw new Error("Could not associate project with artist profile");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -142,11 +122,46 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
       return;
     }
 
+    if (artistOption === 'new' && !newArtistName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a new artist name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (artistOption === 'existing' && !selectedArtistId) {
+      toast({
+        title: "Validation Error",
+        description: "Please select an existing artist",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreating(true);
-    
+
     try {
-      // Step 1: Get or create artist profile
-      const artistId = await getCurrentUserArtist();
+      let artistId: string;
+
+      if (artistOption === 'new') {
+        const { data: newArtist, error: createError } = await supabase
+          .from('artists')
+          .insert({
+            name: newArtistName.trim(),
+            genre: 'General',
+            verified: false,
+            bio: 'New artist on the platform',
+          })
+          .select('id')
+          .single();
+
+        if (createError) throw createError;
+        artistId = newArtist.id;
+      } else { // artistOption === 'existing'
+        artistId = selectedArtistId!;
+      }
 
       // Step 2: Map form data to database schema (snake_case)
       const projectData = {
@@ -163,7 +178,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
 
       // Step 3: Call the parent onSubmit function
       await onSubmit(projectData);
-      
+
       // Reset form on success
       setFormData({
         title: '',
@@ -173,15 +188,15 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
         description: '',
         riskLevel: 'Medium',
       });
-      
+
       onClose();
-      
+
     } catch (error) {
       console.error('Project creation error:', error);
-      
+
       // Provide specific error messages based on error type
       let errorMessage = "Failed to create project";
-      
+
       if (error instanceof Error) {
         if (error.message.includes("artist")) {
           errorMessage = "Could not associate project with artist profile";
@@ -195,7 +210,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
           errorMessage = error.message;
         }
       }
-      
+
       toast({
         title: "Error Creating Project",
         description: errorMessage,
@@ -212,7 +227,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
         <DialogHeader>
           <DialogTitle className="gradient-text text-xl">Create New Project</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
@@ -225,7 +240,53 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 required
               />
             </div>
-            
+
+            <div>
+              <Label htmlFor="artist-option">Artist</Label>
+              <div className="flex space-x-4">
+                <Button
+                  type="button"
+                  variant={artistOption === 'new' ? 'secondary' : 'ghost'}
+                  onClick={() => setArtistOption('new')}
+                >
+                  New Artist
+                </Button>
+                <Button
+                  type="button"
+                  variant={artistOption === 'existing' ? 'secondary' : 'ghost'}
+                  onClick={() => setArtistOption('existing')}
+                >
+                  Existing Artist
+                </Button>
+              </div>
+              {artistOption === 'new' ? (
+                <Input
+                  id="new-artist-name"
+                  value={newArtistName}
+                  onChange={(e) => setNewArtistName(e.target.value)}
+                  placeholder="Enter new artist name"
+                  className="mt-2"
+                />
+              ) : (
+                <Select
+                  value={selectedArtistId}
+                  onValueChange={setSelectedArtistId}
+                  className="mt-2"
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an existing artist" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingArtists.map((artist) => (
+                      <SelectItem key={artist.id} value={artist.id}>
+                        {artist.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
             <div>
               <Label htmlFor="category">Category</Label>
               <Select
@@ -243,9 +304,9 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
-              <Label htmlFor="targetFunding">Target Funding (USD)</Label>
+              <Label htmlFor="targetFunding">Target Funding (IP)</Label>
               <Input
                 id="targetFunding"
                 type="number"
@@ -257,7 +318,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 required
               />
             </div>
-            
+
             <div>
               <Label htmlFor="stakingApy">Staking APY (%)</Label>
               <Input
@@ -272,7 +333,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 required
               />
             </div>
-            
+
             <div>
               <Label htmlFor="riskLevel">Risk Level</Label>
               <Select
@@ -289,7 +350,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="description">Project Description</Label>
               <textarea
@@ -303,7 +364,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
               />
             </div>
           </div>
-          
+
           <div className="flex gap-3">
             <Button
               type="button"

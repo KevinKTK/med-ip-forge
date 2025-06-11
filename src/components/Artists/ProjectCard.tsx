@@ -150,7 +150,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 onClick={() => setIsModalOpen(true)}
                 disabled={isStaking || !stakingPool?.is_active}
               >
-                {isStaking ? 'Processing...' : 'Stake Now'}
+                {isStaking ? 'Processing...' : 'Fund Now'}
               </Button>
             )}
           </div>
