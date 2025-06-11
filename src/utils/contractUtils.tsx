@@ -1,3 +1,4 @@
+
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
@@ -60,11 +61,12 @@ export function useStakingPoolDeployer() {
       const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
-      // Deploy the contract with simplified parameters
+      // Deploy the contract with required chain parameter
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)]
+        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
+        chain: storyTestnet
       });
 
       // Wait for the transaction to be confirmed
