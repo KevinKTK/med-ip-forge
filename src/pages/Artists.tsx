@@ -1,3 +1,4 @@
+
 import { Layout } from '@/components/Layout';
 import { ArtistHeader } from '@/components/Artists/ArtistHeader';
 import { ArtistFilters } from '@/components/Artists/ArtistFilters';
@@ -6,9 +7,10 @@ import { ProjectCard } from '@/components/Artists/ProjectCard';
 import { CreateProjectModal } from '@/components/Artists/CreateProjectModal';
 import { useState, useEffect } from 'react';
 import { useProjects } from '@/hooks/useProjects';
+import { useArtists } from '@/hooks/useArtists';
 import { useStakingPoolDeployer, StakingError } from '@/utils/contractUtils';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, Project, StakingPool } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock artists data
 const artists = [
@@ -110,6 +112,7 @@ const Artists = () => {
   });
 
   const { projects, stakingPools, patents, isLoading, createProject, updateProjectStakingPool, refreshProjects } = useProjects();
+  const { artists: artistsData, getArtistById } = useArtists();
   const { deployStakingPool, isDeploying } = useStakingPoolDeployer();
   const { toast } = useToast();
 
@@ -141,6 +144,15 @@ const Artists = () => {
         description: error instanceof Error ? error.message : "Failed to create project",
         variant: "destructive",
       });
+    }
+  };
+
+  const getArtistName = async (artistId: number): Promise<string> => {
+    try {
+      const artist = await getArtistById(artistId);
+      return artist?.name || 'Unknown Artist';
+    } catch (error) {
+      return 'Unknown Artist';
     }
   };
 
@@ -190,14 +202,20 @@ const Artists = () => {
           <div className="lg:col-span-3">
             {activeTab === 'projects' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredProjects.map((project) => (
-                  <ProjectCard 
-                    key={project.id} 
-                    project={project}
-                    stakingPool={stakingPools[project.id]}
-                    patent={patents[project.id]}
-                  />
-                ))}
+                {filteredProjects.map((project) => {
+                  const artist = artistsData.find(a => a.id === project.artist_id);
+                  const artistName = artist?.name || 'Unknown Artist';
+                  
+                  return (
+                    <ProjectCard 
+                      key={project.id} 
+                      project={project}
+                      artistName={artistName}
+                      stakingPool={stakingPools[project.id]}
+                      patent={patents[project.id]}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

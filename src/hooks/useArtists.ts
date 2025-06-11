@@ -1,6 +1,22 @@
+
 import { useState, useEffect } from 'react';
-import { supabase, Artist } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+interface Artist {
+  id: number;
+  name: string;
+  avatar: string;
+  genre: string;
+  verified: boolean;
+  total_raised: number;
+  completed_projects: number;
+  followers: number;
+  rating: number;
+  current_project: string;
+  bio: string;
+  created_at: string;
+}
 
 export function useArtists() {
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -50,7 +66,7 @@ export function useArtists() {
     }
   };
 
-  const updateArtist = async (artistId: number, updates: Partial<Artist>) => {
+  const updateArtist = async (artistId: number, updates: Omit<Partial<Artist>, 'id'>) => {
     try {
       const { data: updatedArtist, error: updateError } = await supabase
         .from('artists')
@@ -95,4 +111,4 @@ export function useArtists() {
     getArtistById,
     refreshArtists: fetchArtists,
   };
-} 
+}

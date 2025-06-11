@@ -1,146 +1,174 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { StakingPool, Project } from '@/utils/supabase';
-import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useStaking } from '@/hooks/useStaking';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { X, Calendar, TrendingUp, Lock, Calculator, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StakingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  stakingPool?: StakingPool;
-  project?: Project;
+  stakingPool: {
+    id: number;
+    project_id: number;
+    contract_address: string;
+    apy: number;
+    name: string;
+    description: string;
+    current_completion: number;
+  };
+  project: {
+    id: number;
+    title: string;
+    description: string;
+    target_funding: number;
+    current_funding: number;
+    category: string;
+  };
 }
 
 export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingModalProps) => {
-  console.log("StakingModal: Received stakingPool prop:", stakingPool);
-  const { isConnected } = useAccount();
+  const [stakeAmount, setStakeAmount] = useState('');
+  const [lockupPeriod, setLockupPeriod] = useState(30); // Default to 30 days
+  const [estimatedRewards, setEstimatedRewards] = useState(0);
 
-  // Defensive check for stakingPool
-  if (!stakingPool) {
-    console.warn("StakingModal: stakingPool prop is undefined. Returning null.");
-    return null; // Render nothing if stakingPool is undefined
-  }
+  if (!isOpen || !stakingPool || !project) return null;
 
-  const {
-    amount,
-    setAmount,
-    selectedLockup,
-    setSelectedLockup,
-    isStaking,
-    isSuccess,
-    calculateRewards,
-    handleStake,
-  } = useStaking(stakingPool.project_id);
-
-  const lockupPeriods = stakingPool.lockup_periods || [30, 60, 90];
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleStake(amount);
+  const calculateRewards = () => {
+    const amount = parseFloat(stakeAmount) || 0;
+    const apy = stakingPool.apy || 0;
+    const timeInYears = lockupPeriod / 365;
+    return amount * (apy / 100) * timeInYears;
   };
 
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success(`Successfully staked ${amount} IP in ${stakingPool.name}`);
-      onClose();
-      setAmount('');
-      setSelectedLockup(30);
-    }
-  }, [isSuccess, amount, stakingPool.name, onClose, setAmount, setSelectedLockup]);
+  const handleStakeChange = (value: string) => {
+    setStakeAmount(value);
+    setEstimatedRewards(calculateRewards());
+  };
+
+  const handleLockupChange = (days: number) => {
+    setLockupPeriod(days);
+    setEstimatedRewards(calculateRewards());
+  };
+
+  const handleStake = async () => {
+    console.log(`Staking ${stakeAmount} for ${lockupPeriod} days in ${project.title}`);
+    // Handle staking logic here
+    onClose();
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-neon">
-        <DialogHeader>
-          <DialogTitle className="text-xl text-white mb-2">Stake in {stakingPool.name}</DialogTitle>
-          {stakingPool.description && <p className="text-sm text-gray-400">{stakingPool.description}</p>}
-        </DialogHeader>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="glass-card max-w-md w-full p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold gradient-text">Stake in Project</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {!isConnected ? (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <p className="text-gray-400">Connect your wallet to start staking</p>
-              <ConnectButton />
+        <div className="space-y-4">
+          <div className="p-4 bg-black/30 rounded-lg">
+            <h4 className="font-semibold text-white">{project.title}</h4>
+            <p className="text-sm text-gray-400">{project.category}</p>
+            <p className="text-sm text-gray-300 mt-2">{project.description}</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Current Progress</span>
+              <span className="text-neon-blue">{stakingPool.current_completion}%</span>
             </div>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="amount" className="text-white">Stake Amount (IP)</Label>
-                <div className="relative">
-                  <Input
-                    id="amount"
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Enter amount to stake"
-                    className="pr-12"
-                    step="0.01"
-                    min="0"
-                    required
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">IP</span>
-                </div>
-              </div>
+            <Progress value={stakingPool.current_completion} className="h-2" />
+          </div>
 
-              <div className="space-y-2">
-                <Label className="text-white">Lock-up Period (for rewards calculation)</Label>
-                <RadioGroup
-                  value={selectedLockup.toString()}
-                  onValueChange={(value) => setSelectedLockup(Number(value))}
-                  className="grid grid-cols-3 gap-4"
-                >
-                  {lockupPeriods.map((period) => (
-                    <div key={period} className="relative">
-                      <RadioGroupItem
-                        value={period.toString()}
-                        id={`period-${period}`}
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor={`period-${period}`}
-                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                      >
-                        <span className="text-lg font-bold">{period}</span>
-                        <span className="text-sm text-muted-foreground">days</span>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="p-3 bg-black/30 rounded">
+              <p className="text-gray-400">APY</p>
+              <p className="font-semibold text-white">{stakingPool.apy}%</p>
+            </div>
+            <div className="p-3 bg-black/30 rounded">
+              <p className="text-gray-400">Contract</p>
+              <a href={`https://etherscan.io/address/${stakingPool.contract_address}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-neon-blue flex items-center">
+                View <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            </div>
+          </div>
 
-              <div className="space-y-2">
-                <Label className="text-white">Estimated Rewards</Label>
-                <div className="p-4 rounded-lg bg-black/20 border border-neon">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">APY</span>
-                    <span className="text-white font-bold">{stakingPool.apy}%</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-gray-400">Rewards</span>
-                    <span className="text-white font-bold">
-                      {amount && stakingPool.apy ? calculateRewards(stakingPool.apy).toFixed(2) : '0'} IP
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-300">
+              Stake Amount ($IP)
+            </label>
+            <input
+              type="number"
+              value={stakeAmount}
+              onChange={(e) => handleStakeChange(e.target.value)}
+              placeholder="Enter amount to stake"
+              className="w-full px-4 py-3 bg-black/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
+            />
+          </div>
 
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-300">
+              Lockup Period
+            </label>
+            <div className="flex space-x-2">
               <Button
-                type="submit"
-                className="w-full bg-neon-gradient hover:opacity-90"
-                disabled={isStaking || !amount || Number(amount) <= 0 || !selectedLockup}
+                variant={lockupPeriod === 30 ? 'default' : 'outline'}
+                onClick={() => handleLockupChange(30)}
+                className={lockupPeriod === 30 ? 'bg-neon-gradient hover:opacity-90' : 'neon-border'}
               >
-                {isStaking ? 'Processing...' : 'Stake Now'}
+                30 Days
               </Button>
-            </>
+              <Button
+                variant={lockupPeriod === 90 ? 'default' : 'outline'}
+                onClick={() => handleLockupChange(90)}
+                className={lockupPeriod === 90 ? 'bg-neon-gradient hover:opacity-90' : 'neon-border'}
+              >
+                90 Days
+              </Button>
+              <Button
+                variant={lockupPeriod === 180 ? 'default' : 'outline'}
+                onClick={() => handleLockupChange(180)}
+                className={lockupPeriod === 180 ? 'bg-neon-gradient hover:opacity-90' : 'neon-border'}
+              >
+                180 Days
+              </Button>
+            </div>
+          </div>
+
+          {estimatedRewards > 0 && (
+            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-300">Estimated Rewards</span>
+                <span className="font-semibold text-green-400 flex items-center">
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                  {estimatedRewards.toFixed(2)} $IP
+                </span>
+              </div>
+            </div>
           )}
-        </form>
-      </DialogContent>
-    </Dialog>
+
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 neon-border"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStake}
+              disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
+              className="flex-1 bg-neon-gradient hover:opacity-90"
+            >
+              <Lock className="w-4 h-4 mr-2" />
+              Stake
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

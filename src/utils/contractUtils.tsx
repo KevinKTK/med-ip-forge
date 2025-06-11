@@ -3,7 +3,8 @@ import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
-import { supabase, StakingPool } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { storyTestnet } from 'wagmi/chains';
 
 export class StakingError extends Error {
   constructor(message: string, public code: string) {
@@ -57,15 +58,16 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Project already has a staking pool", "POOL_EXISTS");
       }
 
-      const stakingAbi = Staking.abi;
+      const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
-      // Deploy the contract with project-specific parameters
+      // Deploy the contract with required parameters
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [BigInt(apy)],
-        account: walletClient.account,
+        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
+        type: 'eip1559',
+        chain: storyTestnet
       });
 
       // Wait for the transaction to be confirmed
@@ -75,7 +77,7 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Deployment failed: contract address not found", "DEPLOYMENT_FAILED");
       }
 
-      // Store the deployed contract information in Supabase
+      // Store the deployed contract information in Supabase with all required fields
       const { data: newPool, error: dbError } = await supabase
         .from('staking_pools')
         .insert({
@@ -88,6 +90,13 @@ export function useStakingPoolDeployer() {
           total_staked: 0,
           total_stakers: 0,
           is_active: true,
+          name: `Project ${projectId} Staking Pool`,
+          description: `Staking pool for project ${projectId}`,
+          risk_level: 'Medium',
+          asset_type: 'IP',
+          current_completion: 0,
+          total_pool_size: 1000000,
+          available_capacity: 1000000,
         })
         .select()
         .single();
@@ -119,7 +128,7 @@ export function useStakingPoolDeployer() {
     }
   };
 
-  const getStakingPool = async (projectId: number): Promise<StakingPool | null> => {
+  const getStakingPool = async (projectId: number) => {
     try {
       const { data, error } = await supabase
         .from('staking_pools')
@@ -145,8 +154,8 @@ export function useStakingPoolDeployer() {
 
   const updateStakingPool = async (
     projectId: number,
-    updates: Partial<StakingPool>
-  ): Promise<StakingPool> => {
+    updates: any
+  ) => {
     try {
       const { data, error } = await supabase
         .from('staking_pools')

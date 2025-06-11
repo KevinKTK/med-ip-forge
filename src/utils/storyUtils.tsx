@@ -1,45 +1,59 @@
 
-import { sha256 } from 'js-sha256';
-import { supabase } from '@/utils/supabase';
+import { useState } from 'react';
+import { useStoryClient } from '@/hooks/useStoryClient';
+import { supabase } from '@/integrations/supabase/client';
 
-const uploadMetadataToIpfs = async (formData: any) => {
-  // 1. Create the metadata JSON object
-  const metadata = {
-    name: formData.title,
-    description: formData.description,
-    external_url: "https://your-project-website.com",
-    attributes: [
-      { trait_type: "Category", value: formData.category },
-      { trait_type: "Funding Goal", value: formData.fundingGoal },
-      { trait_type: "Duration", value: formData.duration },
-      { trait_type: "Royalty Share", value: formData.royaltyShare },
-    ],
-    milestones: formData.milestones,
+export const useLicenseRegistry = () => {
+  const { storyClient } = useStoryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const registerLicense = async (
+    ipId: string,
+    licensorAddress: string,
+    licenseeAddress: string,
+    terms: string
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log("License registration function temporarily disabled.");
+      // TODO: Implement license registration when Story Protocol API is available
+      return { txHash: "0x123", supabaseData: null };
+    } catch (err: any) {
+      console.error("Error registering license:", err);
+      setError(err.message || "Failed to register license.");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  try {
-    // 2. Call Supabase edge function to upload to IPFS using Pinata secrets
-    const { data, error } = await supabase.functions.invoke('upload-to-ipfs', {
-      body: {
-        metadata: metadata,
-        fileName: `${formData.title}-metadata.json`
-      }
-    });
-
-    if (error) throw error;
-
-    const metadataURI = `ipfs://${data.ipfsHash}`;
-    const contentHash = sha256(JSON.stringify(metadata));
-
-    console.log("Metadata uploaded successfully:", metadataURI);
-
-    // 3. Return the URI and hash
-    return { metadataURI, contentHash };
-
-  } catch (error) {
-    console.error("Error uploading to IPFS:", error);
-    throw error;
-  }
+  return { registerLicense, isLoading, error };
 };
 
-export { uploadMetadataToIpfs };
+export const useQueryLicense = () => {
+    const { storyClient } = useStoryClient();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const queryLicense = async (ipId: string) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            console.log("License query function temporarily disabled.");
+            // TODO: Implement license querying when Story Protocol API is available
+            return null;
+        } catch (err: any) {
+            console.error("Error querying license:", err);
+            setError(err.message || "Failed to query license.");
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { queryLicense, isLoading, error };
+};

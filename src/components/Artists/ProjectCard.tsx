@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,10 +7,35 @@ import { TrendingUp, Clock, Target, Star, Coins, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { StakeProjectModal } from './StakeProjectModal';
 import { StakingModal } from '@/components/Staking/StakingModal';
-import { Project, StakingPool, Patent } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useStaking } from '@/hooks/useStaking';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  current_funding: number;
+  target_funding: number;
+  completed_milestones: number;
+  milestones: number;
+  staking_apy: number;
+  time_remaining: string;
+  category: string;
+  risk_level: string;
+}
+
+interface StakingPool {
+  id: number;
+  contract_address: string;
+  is_active: boolean;
+}
+
+interface Patent {
+  id: number;
+  title: string;
+}
 
 interface ProjectCardProps {
   project: Project;

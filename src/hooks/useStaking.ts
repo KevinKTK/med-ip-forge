@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useWriteContract, useTransaction, useAccount, useConfig, useReadContract } from 'wagmi';
 import { toast } from 'sonner';
 import { stakingABI } from '@/utils/contracts';
 import { useStakingPool } from './useStakingPool';
-import { supabase } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { parseEther, formatEther } from 'viem';
 
 export const useStaking = (projectId: number) => {

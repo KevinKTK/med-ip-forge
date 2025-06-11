@@ -1,3 +1,4 @@
+
 import { Layout } from '@/components/Layout';
 import { StakingHeader } from '@/components/Staking/StakingHeader';
 import { StakingPoolCard } from '@/components/Staking/StakingPoolCard';
@@ -5,13 +6,13 @@ import { StakingFilters } from '@/components/Staking/StakingFilters';
 import { RewardsPanel } from '@/components/Staking/RewardsPanel';
 import { TransactionHistory } from '@/components/Staking/TransactionHistory';
 import { useState, useEffect } from 'react';
-import { supabase, StakingPool, Project, Artist } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const Staking = () => {
-  const [stakingPools, setStakingPools] = useState<StakingPool[]>([]);
-  const [projects, setProjects] = useState<Record<number, Project>>({});
-  const [artists, setArtists] = useState<Record<number, Artist>>({});
+  const [stakingPools, setStakingPools] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Record<number, any>>({});
+  const [artists, setArtists] = useState<Record<number, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -51,12 +52,12 @@ const Staking = () => {
         const projectsMap = (projectsData || []).reduce((acc, project) => {
           acc[project.id] = project;
           return acc;
-        }, {} as Record<number, Project>);
+        }, {} as Record<number, any>);
 
         const artistsMap = (artistsData || []).reduce((acc, artist) => {
           acc[artist.id] = artist;
           return acc;
-        }, {} as Record<number, Artist>);
+        }, {} as Record<number, any>);
 
         setStakingPools(poolsData || []);
         setProjects(projectsMap);
@@ -112,18 +113,9 @@ const Staking = () => {
                   return (
                     <StakingPoolCard
                       key={pool.id}
-                      pool={{
-                        ...pool,
-                        name: project?.title || 'Unknown Project',
-                        assetType: project?.category || 'Unknown',
-                        currentCompletion: project ? (project.current_funding / project.target_funding) * 100 : 0,
-                        totalPoolSize: project?.target_funding || 0,
-                        availableCapacity: project ? project.target_funding - project.current_funding : 0,
-                        riskLevel: project?.risk_level || 'Unknown',
-                        description: project?.description || '',
-                        artist: artist?.name,
-                        launchDate: project?.created_at
-                      }}
+                      pool={pool}
+                      project={project}
+                      artistName={artist?.name || 'Unknown Artist'}
                     />
                   );
                 })}

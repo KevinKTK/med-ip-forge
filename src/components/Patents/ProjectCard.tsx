@@ -1,7 +1,9 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Vote, TrendingUp, Users } from 'lucide-react';
+import { Calendar, TrendingUp, Users, Vote, Coins, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectCardProps {
   project: {
