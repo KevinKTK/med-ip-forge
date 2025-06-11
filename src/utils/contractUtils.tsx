@@ -1,4 +1,3 @@
-
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
@@ -58,6 +57,38 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Project already has a staking pool", "POOL_EXISTS");
       }
 
+      // Fetch project details to get the project name and artist_id
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .select('title, artist_id')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) {
+        throw new StakingError(`Failed to fetch project details: ${projectError.message}`, "PROJECT_FETCH_ERROR");
+      }
+      if (!projectData) {
+        throw new StakingError("Project not found", "PROJECT_NOT_FOUND");
+      }
+
+      const projectName = projectData.title;
+
+      // Fetch artist details to get the artist name
+      const { data: artistData, error: artistError } = await supabase
+        .from('artists')
+        .select('name')
+        .eq('id', projectData.artist_id)
+        .single();
+
+      if (artistError) {
+        throw new StakingError(`Failed to fetch artist details: ${artistError.message}`, "ARTIST_FETCH_ERROR");
+      }
+      if (!artistData) {
+        throw new StakingError("Artist not found", "ARTIST_NOT_FOUND");
+      }
+
+      const artistName = artistData.name;
+
       const stakingAbi = Staking.abi as any;
       const stakingBytecode = Staking.bytecode.object as `0x${string}`;
 
@@ -65,7 +96,7 @@ export function useStakingPoolDeployer() {
       const hash = await walletClient.deployContract({
         abi: stakingAbi,
         bytecode: stakingBytecode,
-        args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
+        args: [apy, `${projectName} Staking Pool`, BigInt(1000000)],
         type: 'eip1559',
         chain: storyAeneid
       });
@@ -90,8 +121,8 @@ export function useStakingPoolDeployer() {
           total_staked: 0,
           total_stakers: 0,
           is_active: true,
-          name: `Project ${projectId} Staking Pool`,
-          description: `Staking pool for project ${projectId}`,
+          name: `${projectName} Staking Pool`,
+          description: `Staking pool for ${projectName} by ${artistName}`,
           risk_level: 'Medium',
           asset_type: 'IP',
           current_completion: 0,

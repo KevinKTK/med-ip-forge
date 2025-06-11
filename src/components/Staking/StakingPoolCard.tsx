@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, Users, Clock, Shield, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-
+import { useStaking } from '@/hooks/useStaking';
 interface StakingPoolCardProps {
   pool: {
     name: string;
@@ -32,7 +32,10 @@ const formatIP = (amount: number) => {
   }).format(amount) + ' IP';
 };
 
+
+
 export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName }) => {
+  const {totalStakedOnChain} = useStaking(project.id);
   return (
     <Card className="glass-card neon-border">
       <CardHeader>
@@ -65,7 +68,7 @@ export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project,
             <Clock className="w-4 h-4 inline-block mr-1" />
             Total Staked
           </p>
-          <p className="text-xl font-bold text-white">{formatIP(pool.total_staked)}</p>
+          <p className="text-xl font-bold text-white">{formatIP(pool.total_staked + totalStakedOnChain)}</p>
         </div>
 
         <div className="space-y-2">
