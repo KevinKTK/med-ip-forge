@@ -13,6 +13,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther } from 'viem';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import {StakingPoolCard} from "@/components/Staking/StakingPoolCard.tsx";
 
 interface Project {
   id: number;
@@ -84,12 +85,12 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
   });
 
   const contractBalance = contractBalanceData ? parseFloat(contractBalanceData.formatted) : 0;
-  
+
   const [fundAmount, setFundAmount] = useState('');
 
   const completionPercentage = (project.completed_milestones / project.milestones) * 100;
   const fundingPercentage = ((project.current_funding + contractBalance) / project.target_funding) * 100;
-  
+
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
       case 'low':
@@ -191,7 +192,7 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -219,12 +220,8 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
                 <Progress value={fundingPercentage} className="h-2" />
               </div>
             </div>
-          
+
             <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <p className="text-gray-400">Staking APY</p>
-                <p className="text-white">{project.staking_apy || 'N/A'}%</p>
-            </div>
             <div>
                 <p className="text-gray-400">Time Remaining</p>
                 <p className="text-white">{project.time_remaining}</p>
@@ -244,16 +241,6 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
             </div>
 
             <div className="flex space-x-2">
-            {project.staking_pool_id && (
-              <Button
-                variant="outline"
-                className="neon-border"
-                onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${project.staking_pool_id}`, '_blank')}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                View Staking Contract
-              </Button>
-            )}
 
             {fundingContractAddress && (
               <Button
