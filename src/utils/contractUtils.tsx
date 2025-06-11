@@ -1,9 +1,9 @@
-
 import Staking from '@/contracts/Staking.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
 import { supabase } from '@/integrations/supabase/client';
+import { storyTestnet } from 'wagmi/chains';
 
 export class StakingError extends Error {
   constructor(message: string, public code: string) {
@@ -65,6 +65,7 @@ export function useStakingPoolDeployer() {
         abi: stakingAbi,
         bytecode: stakingBytecode,
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
+        chain: storyTestnet,
         account: walletClient.account
       });
 
