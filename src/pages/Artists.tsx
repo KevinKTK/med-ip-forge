@@ -1,4 +1,3 @@
-
 import { Layout } from '@/components/Layout';
 import { ArtistHeader } from '@/components/Artists/ArtistHeader';
 import { ArtistFilters } from '@/components/Artists/ArtistFilters';
@@ -118,32 +117,77 @@ const Artists = () => {
 
   const handleCreateProject = async (projectData: any) => {
     try {
-      // Create the project in the database
+      console.log('Creating project with data:', projectData);
+      
+      // Step 1: Create the project in the database first
       const newProject = await createProject(projectData);
-
-      // Deploy staking pool for the project
-      const stakingPool = await deployStakingPool(
-        newProject.id,
-        15, // APY
-        [30, 60, 90] // Lockup periods in days
-      );
-
-      // Update project with staking pool reference
-      await updateProjectStakingPool(newProject.id, stakingPool.id);
-
-      // Refresh the projects list
-      await refreshProjects();
+      console.log('Project created successfully:', newProject);
 
       toast({
         title: "Project Created",
-        description: "Your project and staking pool have been created successfully.",
+        description: "Your project has been created successfully.",
       });
+
+      // Step 2: Try to deploy staking pool (optional - don't fail if this fails)
+      try {
+        console.log('Attempting to deploy staking pool for project:', newProject.id);
+        
+        const stakingPool = await deployStakingPool(
+          newProject.id,
+          projectData.staking_apy || 15, // Use project APY or default
+          [30, 60, 90] // Lockup periods in days
+        );
+        
+        console.log('Staking pool deployed successfully:', stakingPool);
+
+        // Step 3: Update project with staking pool reference
+        await updateProjectStakingPool(newProject.id, stakingPool.id);
+        
+        toast({
+          title: "Staking Pool Deployed",
+          description: "Your staking pool has been deployed successfully.",
+        });
+        
+      } catch (stakingError) {
+        console.error('Staking pool deployment failed:', stakingError);
+        
+        // Project was created successfully, but staking pool failed
+        toast({
+          title: "Staking Pool Warning",
+          description: "Project created successfully, but staking pool deployment failed. You can try deploying it later.",
+          variant: "destructive",
+        });
+      }
+
+      // Step 4: Refresh the projects list
+      await refreshProjects();
+      
     } catch (error) {
+      console.error('Project creation error:', error);
+      
+      // More specific error handling
+      let errorMessage = "Failed to create project";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("artist_id")) {
+          errorMessage = "Error: Could not associate project with artist profile";
+        } else if (error.message.includes("target_funding")) {
+          errorMessage = "Error: Invalid target funding amount";
+        } else if (error.message.includes("violates")) {
+          errorMessage = "Error: Invalid data provided";
+        } else {
+          errorMessage = `Database error: ${error.message}`;
+        }
+      }
+      
       toast({
         title: "Error Creating Project",
-        description: error instanceof Error ? error.message : "Failed to create project",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Re-throw to let the modal handle it
+      throw error;
     }
   };
 
