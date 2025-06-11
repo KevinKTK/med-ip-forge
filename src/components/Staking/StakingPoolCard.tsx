@@ -25,6 +25,13 @@ interface StakingPoolCardProps {
   artistName: string;
 }
 
+const formatIP = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount) + ' IP';
+};
+
 export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName }) => {
   return (
     <Card className="glass-card neon-border">
@@ -58,7 +65,7 @@ export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project,
             <Clock className="w-4 h-4 inline-block mr-1" />
             Total Staked
           </p>
-          <p className="text-xl font-bold text-white">${pool.total_staked.toLocaleString()}</p>
+          <p className="text-xl font-bold text-white">{formatIP(pool.total_staked)}</p>
         </div>
 
         <div className="space-y-2">
