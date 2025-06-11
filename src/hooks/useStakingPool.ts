@@ -1,6 +1,27 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/utils/supabase';
-import { StakingPool } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
+
+interface StakingPool {
+  id: number;
+  project_id: number;
+  contract_address: string;
+  deployer_address: string;
+  deployment_date: string;
+  apy: number;
+  lockup_periods: number[];
+  total_staked: number;
+  total_stakers: number;
+  is_active: boolean;
+  created_at: string;
+  name: string;
+  asset_type: string;
+  current_completion: number;
+  total_pool_size: number;
+  available_capacity: number;
+  risk_level: string;
+  description: string;
+}
 
 export const useStakingPool = (projectId: number) => {
   const [stakingPool, setStakingPool] = useState<StakingPool | null>(null);
