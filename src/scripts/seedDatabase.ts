@@ -57,7 +57,7 @@ const mockProjects = [
     title: "AI-Powered Music Composition",
     category: "Music",
     target_funding: 50000,
-    current_funding: 25000,
+    current_funding: 24.20,
     staking_apy: 15,
     time_remaining: "30 days",
     description: "An AI system that composes original music based on emotional inputs",
@@ -66,13 +66,13 @@ const mockProjects = [
     completed_milestones: 1,
     status: "active",
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   },
   {
     title: "Digital Art NFT Collection",
     category: "Visual Arts",
     target_funding: 75000,
-    current_funding: 45000,
+    current_funding: 69432.88,
     staking_apy: 12,
     time_remaining: "45 days",
     description: "A collection of 100 unique digital art pieces with AR integration",
@@ -81,13 +81,13 @@ const mockProjects = [
     completed_milestones: 2,
     status: "active",
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   },
   {
     title: "Interactive Storytelling Platform",
     category: "Literature",
-    target_funding: 100000,
-    current_funding: 60000,
+    target_funding: 105000,
+    current_funding: 12551.02,
     staking_apy: 18,
     time_remaining: "60 days",
     description: "A platform for creating interactive stories with multiple endings",
@@ -96,7 +96,7 @@ const mockProjects = [
     completed_milestones: 0,
     status: "active",
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   }
 ];
 
@@ -109,13 +109,13 @@ const mockStakingPools = [
     deployment_date: new Date().toISOString(),
     apy: 15,
     lockup_periods: [30, 60, 90],
-    total_staked: 25000,
-    total_stakers: 15,
+    total_staked: 2541,
+    total_stakers: 32,
     is_active: true,
     asset_type: "IP",
-    current_completion: 33.33,
+    current_completion: 20,
     total_pool_size: 50000,
-    available_capacity: 25000,
+    available_capacity: 40000,
     risk_level: "Medium",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -128,13 +128,13 @@ const mockStakingPools = [
     deployment_date: new Date().toISOString(),
     apy: 12,
     lockup_periods: [30, 60, 90],
-    total_staked: 45000,
-    total_stakers: 25,
+    total_staked: 43210,
+    total_stakers: 543,
     is_active: true,
     asset_type: "IP",
-    current_completion: 50,
+    current_completion: 20,
     total_pool_size: 75000,
-    available_capacity: 30000,
+    available_capacity: 60000,
     risk_level: "Low",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -147,16 +147,37 @@ const mockStakingPools = [
     deployment_date: new Date().toISOString(),
     apy: 18,
     lockup_periods: [30, 60, 90],
-    total_staked: 60000,
-    total_stakers: 35,
+    total_staked: 425,
+    total_stakers: 12,
     is_active: true,
     asset_type: "IP",
-    current_completion: 0,
+    current_completion: 20,
     total_pool_size: 100000,
-    available_capacity: 40000,
+    available_capacity: 80000,
     risk_level: "High",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
+  }
+];
+
+const mockFundingContracts = [
+  {
+    contract_address: "0xe846571fD5eda51dE3E5F0DF0B6FfBF095025803",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
+    deployment_date: new Date().toISOString(),
+    max_funding: 50000,
+  },
+  {
+    contract_address: "0x50cCD8b462142930B5fCC93F7B350f7C6A4AF2ab",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
+    deployment_date: new Date().toISOString(),
+    max_funding: 75000,
+  },
+  {
+    contract_address: "0x270948529035bA88bD1D08E1Eb54807197ff84c9",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
+    deployment_date: new Date().toISOString(),
+    max_funding: 105000,
   }
 ];
 
@@ -201,15 +222,25 @@ async function seedDatabase() {
     if (artistsError) throw artistsError;
     console.log('Artists seeded successfully');
 
-    // Insert projects with artist_id
-    const projectsWithArtists = mockProjects.map((project, index) => ({
+    // Insert funding contracts
+    const { data: fundingContracts, error: fundingContractsError } = await supabase
+      .from('funding_contracts')
+      .insert(mockFundingContracts)
+      .select();
+
+    if (fundingContractsError) throw fundingContractsError;
+    console.log('Funding contracts seeded successfully');
+
+    // Insert projects with artist_id and funding_contract_id
+    const projectsWithArtistsAndFunding = mockProjects.map((project, index) => ({
       ...project,
-      artist_id: artists[index].id
+      artist_id: artists[index].id,
+      funding_contract_id: fundingContracts[index].id,
     }));
 
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
-      .insert(projectsWithArtists)
+      .insert(projectsWithArtistsAndFunding)
       .select();
 
     if (projectsError) throw projectsError;

@@ -1,13 +1,14 @@
-
 import { Layout } from '@/components/Layout';
 import { StakingHeader } from '@/components/Staking/StakingHeader';
 import { StakingPoolCard } from '@/components/Staking/StakingPoolCard';
 import { StakingFilters } from '@/components/Staking/StakingFilters';
 import { RewardsPanel } from '@/components/Staking/RewardsPanel';
 import { TransactionHistory } from '@/components/Staking/TransactionHistory';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { DeployStakingPoolModal } from '@/components/Staking/DeployStakingPoolModal';
+import { StakingModal } from '@/components/Staking/StakingModal';
 
 const Staking = () => {
   const [stakingPools, setStakingPools] = useState<any[]>([]);
@@ -15,6 +16,10 @@ const Staking = () => {
   const [artists, setArtists] = useState<Record<number, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [isDeployStakingPoolModalOpen, setIsDeployStakingPoolModalOpen] = useState(false);
+  const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
+  const [selectedStakingPool, setSelectedStakingPool] = useState<any | null>(null);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   const [selectedFilters, setSelectedFilters] = useState({
     category: 'All',
@@ -24,57 +29,77 @@ const Staking = () => {
     showInactive: false
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch staking pools
-        const { data: poolsData, error: poolsError } = await supabase
-          .from('staking_pools')
-          .select('*');
+  const fetchData = useCallback(async () => {
+    try {
+      // Fetch staking pools
+      const { data: poolsData, error: poolsError } = await supabase
+        .from('staking_pools')
+        .select('*');
 
-        if (poolsError) throw poolsError;
+      if (poolsError) throw poolsError;
 
-        // Fetch projects
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*');
+      // Fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*');
 
-        if (projectsError) throw projectsError;
+      if (projectsError) throw projectsError;
 
-        // Fetch artists
-        const { data: artistsData, error: artistsError } = await supabase
-          .from('artists')
-          .select('*');
+      // Fetch artists
+      const { data: artistsData, error: artistsError } = await supabase
+        .from('artists')
+        .select('*');
 
-        if (artistsError) throw artistsError;
+      if (artistsError) throw artistsError;
 
-        // Convert arrays to records for easier lookup
-        const projectsMap = (projectsData || []).reduce((acc, project) => {
-          acc[project.id] = project;
-          return acc;
-        }, {} as Record<number, any>);
+      // Convert arrays to records for easier lookup
+      const projectsMap = (projectsData || []).reduce((acc, project) => {
+        acc[project.id] = project;
+        return acc;
+      }, {} as Record<number, any>);
 
-        const artistsMap = (artistsData || []).reduce((acc, artist) => {
-          acc[artist.id] = artist;
-          return acc;
-        }, {} as Record<number, any>);
+      const artistsMap = (artistsData || []).reduce((acc, artist) => {
+        acc[artist.id] = artist;
+        return acc;
+      }, {} as Record<number, any>);
 
-        setStakingPools(poolsData || []);
-        setProjects(projectsMap);
-        setArtists(artistsMap);
-      } catch (error) {
-        toast({
-          title: "Error Loading Data",
-          description: error instanceof Error ? error.message : "Failed to load staking data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+      setStakingPools(poolsData || []);
+      setProjects(projectsMap);
+      setArtists(artistsMap);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: error instanceof Error ? error.message : "Failed to load staking data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleDeployNewPool = () => {
+    setIsDeployStakingPoolModalOpen(true);
+  };
+
+  const handleDeploySuccess = () => {
+    fetchData(); // Refresh data after successful deployment
+  };
+
+  const handleOpenStakingModal = (pool: any, projectData: any) => {
+    setSelectedStakingPool(pool);
+    setSelectedProject(projectData);
+    setIsStakingModalOpen(true);
+  };
+
+  const handleCloseStakingModal = () => {
+    setIsStakingModalOpen(false);
+    setSelectedStakingPool(null);
+    setSelectedProject(null);
+  };
 
   const filteredPools = stakingPools.filter(pool => {
     const project = projects[pool.project_id];
@@ -91,7 +116,7 @@ const Staking = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <StakingHeader />
+        <StakingHeader onDeployNewPool={handleDeployNewPool} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -116,6 +141,7 @@ const Staking = () => {
                       pool={pool}
                       project={project}
                       artistName={artist?.name || 'Unknown Artist'}
+                      onOpenStakingModal={handleOpenStakingModal}
                     />
                   );
                 })}
@@ -129,6 +155,19 @@ const Staking = () => {
           </div>
         </div>
       </div>
+      <DeployStakingPoolModal
+        isOpen={isDeployStakingPoolModalOpen}
+        onClose={() => setIsDeployStakingPoolModalOpen(false)}
+        onDeploySuccess={handleDeploySuccess}
+      />
+      {selectedStakingPool && selectedProject && (
+        <StakingModal
+          isOpen={isStakingModalOpen}
+          onClose={handleCloseStakingModal}
+          stakingPool={selectedStakingPool}
+          project={selectedProject}
+        />
+      )}
     </Layout>
   );
 };

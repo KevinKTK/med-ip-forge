@@ -112,13 +112,14 @@ export type Database = {
           id: number
           milestones: number
           risk_level: string
-          staking_apy: number
+          staking_apy: number | null
           staking_pool_id: number | null
           status: string
           target_funding: number
           time_remaining: string
           title: string
           updated_at: string
+          funding_contract_id: number | null
         }
         Insert: {
           artist_id: number
@@ -130,13 +131,14 @@ export type Database = {
           id?: never
           milestones: number
           risk_level: string
-          staking_apy: number
+          staking_apy?: number | null
           staking_pool_id?: number | null
           status?: string
           target_funding: number
           time_remaining: string
           title: string
           updated_at?: string
+          funding_contract_id?: number | null
         }
         Update: {
           artist_id?: number
@@ -148,13 +150,14 @@ export type Database = {
           id?: never
           milestones?: number
           risk_level?: string
-          staking_apy?: number
+          staking_apy?: number | null
           staking_pool_id?: number | null
           status?: string
           target_funding?: number
           time_remaining?: string
           title?: string
           updated_at?: string
+          funding_contract_id?: number | null
         }
         Relationships: [
           {
@@ -169,6 +172,54 @@ export type Database = {
             columns: ["staking_pool_id"]
             isOneToOne: false
             referencedRelation: "staking_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_funding_contract_id_fkey"
+            columns: ["funding_contract_id"]
+            isOneToOne: false
+            referencedRelation: "funding_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funding_contracts: {
+        Row: {
+          id: number
+          project_id: number
+          contract_address: string
+          deployer_address: string
+          deployment_date: string
+          max_funding: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: never
+          project_id: number
+          contract_address: string
+          deployer_address: string
+          deployment_date: string
+          max_funding: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: never
+          project_id?: number
+          contract_address?: string
+          deployer_address?: string
+          deployment_date?: string
+          max_funding?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funding_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

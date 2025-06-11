@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +17,7 @@ interface Project {
   completed_milestones: number;
   created_at: string;
   staking_pool_id?: number;
+  funding_contract_id?: number;
 }
 
 interface StakingPool {

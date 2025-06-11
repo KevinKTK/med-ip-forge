@@ -16,6 +16,7 @@ interface StakingPoolCardProps {
     current_completion: number;
     risk_level: string;
     contract_address: string;
+    lockup_periods: number[];
   };
   project?: {
     id: number;
@@ -23,6 +24,7 @@ interface StakingPoolCardProps {
     description: string;
   };
   artistName: string;
+  onOpenStakingModal: (pool: any, projectData: any) => void;
 }
 
 const formatIP = (amount: number) => {
@@ -32,8 +34,9 @@ const formatIP = (amount: number) => {
   }).format(amount) + ' IP';
 };
 
-export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName }) => {
-  const {totalStakedOnChain} = useStaking(project.id);
+export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName, onOpenStakingModal }) => {
+  const {totalStakedOnChain} = useStaking(project?.id);
+
   return (
     <Card className="glass-card neon-border">
       <CardHeader>
@@ -66,7 +69,7 @@ export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project,
             <Clock className="w-4 h-4 inline-block mr-1" />
             Total Staked
           </p>
-          <p className="text-xl font-bold text-white">{formatIP(pool.total_staked + totalStakedOnChain)}</p>
+          <p className="text-xl font-bold text-white">{formatIP(pool.total_staked + (totalStakedOnChain || 0))}</p>
         </div>
 
         <div className="space-y-2">
@@ -94,6 +97,9 @@ export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project,
             View Contract
           </Button>
         </div>
+        <Button onClick={() => onOpenStakingModal(pool, project)} className="w-full neon-button mt-4">
+          Stake Now
+        </Button>
       </CardContent>
     </Card>
   );

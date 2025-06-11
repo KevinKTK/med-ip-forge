@@ -7,31 +7,31 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from 'wagmi';
+import { useStakingPoolDeployer } from '@/utils/contractUtils';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (projectData: any) => Promise<void>;
-  isDeploying: boolean;
 }
 
-export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: CreateProjectModalProps) => {
+export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
     category: '',
     targetFunding: '',
-    stakingApy: '',
     description: '',
     riskLevel: 'Medium',
   });
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   const { isConnected } = useAccount();
+  const { deployContract, isDeploying, error: deployError } = useStakingPoolDeployer();
 
   const [artistOption, setArtistOption] = useState<'new' | 'existing'>('new');
   const [newArtistName, setNewArtistName] = useState('');
-  const [selectedArtistId, setSelectedArtistId] = useState<string | undefined>(undefined);
-  const [existingArtists, setExistingArtists] = useState<{ id: string; name: string }[]>([]);
+  const [selectedArtistId, setSelectedArtistId] = useState<number | undefined>(undefined);
+  const [existingArtists, setExistingArtists] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -46,8 +46,8 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
           variant: "destructive",
         });
       } else {
-        setExistingArtists(data);
-        if (data.length > 0 && !selectedArtistId) {
+        setExistingArtists(data || []);
+        if (data && data.length > 0 && selectedArtistId === undefined) {
           setSelectedArtistId(data[0].id);
         }
       }
@@ -84,16 +84,6 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
       return false;
     }
 
-    const stakingApy = parseFloat(formData.stakingApy);
-    if (isNaN(stakingApy) || stakingApy <= 0 || stakingApy > 100) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid APY between 0 and 100",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     if (!formData.description.trim()) {
       toast({
         title: "Validation Error",
@@ -116,7 +106,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
     if (!isConnected) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your wallet to create a staking pool",
+        description: "Please connect your wallet to create a project",
         variant: "destructive",
       });
       return;
@@ -131,7 +121,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
       return;
     }
 
-    if (artistOption === 'existing' && !selectedArtistId) {
+    if (artistOption === 'existing' && selectedArtistId === undefined) {
       toast({
         title: "Validation Error",
         description: "Please select an existing artist",
@@ -143,7 +133,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
     setIsCreating(true);
 
     try {
-      let artistId: string;
+      let artistId: number;
 
       if (artistOption === 'new') {
         const { data: newArtist, error: createError } = await supabase
@@ -163,28 +153,55 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
         artistId = selectedArtistId!;
       }
 
-      // Step 2: Map form data to database schema (snake_case)
-      const projectData = {
+      // Step 1: Create project in Supabase
+      const projectToInsert = {
         title: formData.title.trim(),
         artist_id: artistId,
         category: formData.category,
         target_funding: parseFloat(formData.targetFunding),
-        staking_apy: parseFloat(formData.stakingApy),
         description: formData.description.trim(),
         risk_level: formData.riskLevel,
-        time_remaining: '30 days', // Default value
-        milestones: 3, // Default value
+        time_remaining: '30 days',
+        milestones: 3,
+        current_funding: 0,
+        completed_milestones: 0,
+        staking_apy: 0,
       };
 
+      // Ensure 'id' is not present in the payload, even if it shouldn't be
+      delete projectToInsert.id;
+
+      console.log('Project data being inserted:', projectToInsert);
+
+      const { data: newProject, error: projectInsertError } = await supabase
+        .from('projects')
+        .insert(projectToInsert)
+        .select('id')
+        .single();
+
+      if (projectInsertError) throw projectInsertError;
+      if (!newProject) throw new Error("Failed to create project in database.");
+
+      const projectId = newProject.id;
+
+      // Step 2: Deploy Funding contract
+      const deployedContract = await deployContract({
+        projectId: projectId,
+        contractType: 'funding',
+        maxFunding: parseFloat(formData.targetFunding),
+      });
+
       // Step 3: Call the parent onSubmit function
-      await onSubmit(projectData);
+      await onSubmit({
+        ...newProject,
+        funding_contract_id: deployedContract.id,
+      });
 
       // Reset form on success
       setFormData({
         title: '',
         category: '',
         targetFunding: '',
-        stakingApy: '',
         description: '',
         riskLevel: 'Medium',
       });
@@ -201,11 +218,11 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
         if (error.message.includes("artist")) {
           errorMessage = "Could not associate project with artist profile";
         } else if (error.message.includes("wallet")) {
-          errorMessage = "Wallet connection required for staking pool creation";
+          errorMessage = "Wallet connection required";
         } else if (error.message.includes("database")) {
           errorMessage = "Could not save project to database";
         } else if (error.message.includes("contract")) {
-          errorMessage = "Project saved, but failed to deploy staking contract";
+          errorMessage = "Project saved, but failed to deploy funding contract";
         } else {
           errorMessage = error.message;
         }
@@ -230,18 +247,18 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div>
+          <div>
               <Label htmlFor="title">Project Title</Label>
               <Input
                 id="title"
-                value={formData.title}
+              value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter project title"
                 required
-              />
-            </div>
+            />
+          </div>
 
-            <div>
+          <div>
               <Label htmlFor="artist-option">Artist</Label>
               <div className="flex space-x-4">
                 <Button
@@ -269,23 +286,22 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                 />
               ) : (
                 <Select
-                  value={selectedArtistId}
-                  onValueChange={setSelectedArtistId}
-                  className="mt-2"
+                  value={selectedArtistId !== undefined ? selectedArtistId.toString() : ''}
+                  onValueChange={(value) => setSelectedArtistId(parseInt(value, 10))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select an existing artist" />
                   </SelectTrigger>
                   <SelectContent>
                     {existingArtists.map((artist) => (
-                      <SelectItem key={artist.id} value={artist.id}>
+                      <SelectItem key={artist.id} value={artist.id.toString()}>
                         {artist.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
-            </div>
+          </div>
 
             <div>
               <Label htmlFor="category">Category</Label>
@@ -306,30 +322,25 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
             </div>
 
             <div>
-              <Label htmlFor="targetFunding">Target Funding (IP)</Label>
+              <Label htmlFor="targetFunding">Target Funding (USD)</Label>
               <Input
                 id="targetFunding"
                 type="number"
                 value={formData.targetFunding}
                 onChange={(e) => setFormData({ ...formData, targetFunding: e.target.value })}
-                placeholder="Enter target funding amount"
-                min="1"
+                placeholder="e.g., 10000"
                 step="0.01"
                 required
               />
-            </div>
+          </div>
 
             <div>
-              <Label htmlFor="stakingApy">Staking APY (%)</Label>
+              <Label htmlFor="description">Description</Label>
               <Input
-                id="stakingApy"
-                type="number"
-                value={formData.stakingApy}
-                onChange={(e) => setFormData({ ...formData, stakingApy: e.target.value })}
-                placeholder="Enter staking APY"
-                min="0.1"
-                max="100"
-                step="0.1"
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe your project"
                 required
               />
             </div>
@@ -349,36 +360,12 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit, isDeploying }: C
                   <SelectItem value="High">High</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Project Description</Label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your project"
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
-                rows={4}
-                required
-              />
-            </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 neon-border"
-              disabled={isCreating || isDeploying}
-            >
-              Cancel
-            </Button>
             <Button
               type="submit"
+              className="w-full bg-neon-gradient hover:opacity-90"
               disabled={isCreating || isDeploying}
-              className="flex-1 bg-neon-gradient hover:opacity-90"
             >
               {isCreating || isDeploying ? 'Creating Project...' : 'Create Project'}
             </Button>

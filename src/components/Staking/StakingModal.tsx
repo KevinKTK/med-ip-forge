@@ -1,10 +1,14 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { X, Calendar, TrendingUp, Lock, Calculator, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import ReactDOM from 'react-dom';
+import { useStaking } from '@/hooks/useStaking';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useToast } from '@/components/ui/use-toast';
 
 interface StakingModalProps {
   isOpen: boolean;
@@ -17,6 +21,7 @@ interface StakingModalProps {
     name: string;
     description: string;
     current_completion: number;
+    total_stakers: number;
   };
   project: {
     id: number;
@@ -32,35 +37,64 @@ export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingM
   const [stakeAmount, setStakeAmount] = useState('');
   const [lockupPeriod, setLockupPeriod] = useState(30); // Default to 30 days
   const [estimatedRewards, setEstimatedRewards] = useState(0);
+  const [sessionStakersCount, setSessionStakersCount] = useState(0); // For demo purposes
+  const { address } = useAccount();
+  const { toast } = useToast();
+  const { handleStake, isStaking, calculateRewards, isSuccess } = useStaking(project.id);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setSessionStakersCount(prev => prev + 1);
+      onClose();
+    }
+  }, [isSuccess, onClose]);
 
   if (!isOpen || !stakingPool || !project) return null;
 
-  const calculateRewards = () => {
-    const amount = parseFloat(stakeAmount) || 0;
-    const apy = stakingPool.apy || 0;
-    const timeInYears = lockupPeriod / 365;
-    return amount * (apy / 100) * timeInYears;
-  };
-
   const handleStakeChange = (value: string) => {
     setStakeAmount(value);
-    setEstimatedRewards(calculateRewards());
+    setEstimatedRewards(calculateRewards(stakingPool.apy));
   };
 
   const handleLockupChange = (days: number) => {
     setLockupPeriod(days);
-    setEstimatedRewards(calculateRewards());
+    setEstimatedRewards(calculateRewards(stakingPool.apy));
   };
 
-  const handleStake = async () => {
-    console.log(`Staking ${stakeAmount} for ${lockupPeriod} days in ${project.title}`);
-    // Handle staking logic here
-    onClose();
+  const onStake = async () => {
+    if (!stakeAmount || parseFloat(stakeAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid staking amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!address) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to stake.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await handleStake(stakeAmount);
+    } catch (error) {
+      console.error('Staking error:', error);
+      toast({
+        title: "Staking Failed",
+        description: "Failed to process your stake. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card max-w-md w-full p-6 space-y-6">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+      <div className="glass-card max-w-lg w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold gradient-text">Stake in Project</h3>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -68,7 +102,7 @@ export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingM
           </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col max-h-[calc(90vh-150px)] overflow-y-auto">
           <div className="p-4 bg-black/30 rounded-lg">
             <h4 className="font-semibold text-white">{project.title}</h4>
             <p className="text-sm text-gray-400">{project.category}</p>
@@ -89,9 +123,13 @@ export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingM
               <p className="font-semibold text-white">{stakingPool.apy}%</p>
             </div>
             <div className="p-3 bg-black/30 rounded">
+              <p className="text-gray-400">Total Stakers</p>
+              <p className="font-semibold text-white">{stakingPool.total_stakers + sessionStakersCount}</p>
+            </div>
+            <div className="p-3 bg-black/30 rounded">
               <p className="text-gray-400">Contract</p>
-              <a href={`https://etherscan.io/address/${stakingPool.contract_address}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-neon-blue flex items-center">
-                View <ExternalLink className="w-3 h-3 ml-1" />
+              <a href={`https://aeneid.storyscan.xyz/address/${stakingPool.contract_address}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-neon-blue flex items-center">
+                View <ExternalLink className="w-3 h-4 ml-1" />
               </a>
             </div>
           </div>
@@ -158,17 +196,32 @@ export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingM
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleStake}
-              disabled={!stakeAmount || parseFloat(stakeAmount) <= 0}
-              className="flex-1 bg-neon-gradient hover:opacity-90"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              Stake
-            </Button>
+            {!address ? (
+              <ConnectButton.Custom>
+                {({ openConnectModal }) => (
+                  <Button
+                    onClick={openConnectModal}
+                    className="flex-1 bg-neon-gradient hover:opacity-90"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Connect Wallet
+                  </Button>
+                )}
+              </ConnectButton.Custom>
+            ) : (
+              <Button
+                onClick={onStake}
+                disabled={!stakeAmount || parseFloat(stakeAmount) <= 0 || isStaking}
+                className="flex-1 bg-neon-gradient hover:opacity-90"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                {isStaking ? 'Staking...' : 'Stake'}
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

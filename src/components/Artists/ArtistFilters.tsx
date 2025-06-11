@@ -18,7 +18,7 @@ interface ArtistFiltersProps {
 export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) => {
   const categories = ['All', 'Digital Art', 'Music', 'Film', 'Fashion', 'Gaming', 'Literature'];
   const riskLevels = ['All', 'Low', 'Medium', 'High'];
-  
+
   const updateFilter = (key: string, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
   };
@@ -27,7 +27,7 @@ export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) 
     onFiltersChange({
       category: 'All',
       riskLevel: 'All',
-      fundingRange: [0, 100000],
+      fundingRange: [0, 500000],
       verified: false
     });
   };
@@ -51,7 +51,7 @@ export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) 
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         <div>
           <label className="text-sm text-gray-400 mb-3 block">Category</label>
@@ -71,7 +71,7 @@ export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) 
             ))}
           </div>
         </div>
-        
+
         <div>
           <label className="text-sm text-gray-400 mb-3 block">Risk Level</label>
           <div className="space-y-2">
@@ -90,7 +90,7 @@ export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) 
             ))}
           </div>
         </div>
-        
+
         <div>
           <label className="text-sm text-gray-400 mb-3 block">
             Funding Range: ${filters.fundingRange[0].toLocaleString()} - ${filters.fundingRange[1].toLocaleString()}
@@ -98,13 +98,13 @@ export const ArtistFilters = ({ filters, onFiltersChange }: ArtistFiltersProps) 
           <Slider
             value={filters.fundingRange}
             onValueChange={(value) => updateFilter('fundingRange', value)}
-            max={100000}
+            max={500000}
             min={0}
-            step={5000}
+            step={2500}
             className="w-full"
           />
         </div>
-        
+
         <div className="flex items-center justify-between">
           <label className="text-sm text-gray-400">Verified Artists Only</label>
           <Switch

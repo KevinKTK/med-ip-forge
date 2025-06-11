@@ -12,6 +12,7 @@ import { useAccount, useSendTransaction, useWaitForTransactionReceipt, useBalanc
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther } from 'viem';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Project {
   id: number;
@@ -21,10 +22,12 @@ interface Project {
   target_funding: number;
   completed_milestones: number;
   milestones: number;
-  staking_apy: number;
+  staking_apy: number | null;
   time_remaining: string;
   category: string;
   risk_level: string;
+  funding_contract_id?: number | null;
+  staking_pool_id?: number | null;
 }
 
 interface StakingPool {
@@ -41,31 +44,52 @@ interface Patent {
 interface ProjectCardProps {
   project: Project;
   artistName: string;
-  stakingPool?: StakingPool;
   patent?: Patent;
 }
 
-export const ProjectCard = ({ project, artistName, stakingPool, patent }: ProjectCardProps) => {
+export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { handleStake, isStaking } = useStaking(project.id);
   const { isConnected } = useAccount();
+  const { toast } = useToast();
 
-  const { data: hash, sendTransaction, isPending: isSending } = useSendTransaction();
+  const [fundingContractAddress, setFundingContractAddress] = useState<`0x${string}` | undefined>(undefined);
+
+  useEffect(() => {
+    const fetchFundingContractAddress = async () => {
+      if (project.funding_contract_id) {
+        const { data, error } = await supabase
+          .from('funding_contracts')
+          .select('contract_address')
+          .eq('id', project.funding_contract_id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching funding contract address:', error);
+        } else if (data) {
+          setFundingContractAddress(data.contract_address as `0x${string}`);
+        }
+      }
+    };
+    fetchFundingContractAddress();
+  }, [project.funding_contract_id]);
+
+  const { data: hash, sendTransaction, isPending: isSending, error: sendError } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
   const { data: contractBalanceData } = useBalance({
-    address: stakingPool?.contract_address as `0x${string}`,
+    address: fundingContractAddress,
   });
 
   const contractBalance = contractBalanceData ? parseFloat(contractBalanceData.formatted) : 0;
-
+  
   const [fundAmount, setFundAmount] = useState('');
 
   const completionPercentage = (project.completed_milestones / project.milestones) * 100;
   const fundingPercentage = ((project.current_funding + contractBalance) / project.target_funding) * 100;
-
+  
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
       case 'low':
@@ -87,23 +111,45 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
   };
 
   const handleFundNow = async () => {
-    if (!stakingPool?.contract_address) {
-      console.error("Staking pool contract address is missing.");
+    if (!fundingContractAddress) {
+      toast({
+        title: "Funding Error",
+        description: "Funding contract address is missing.",
+        variant: "destructive",
+      });
       return;
     }
 
     const parsedAmount = parseFloat(fundAmount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      console.error("Invalid funding amount.");
+      toast({
+        title: "Validation Error",
+        description: "Invalid funding amount. Please enter a positive number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!sendTransaction) {
+      toast({
+        title: "Wallet Not Ready",
+        description: "Wallet is not ready to send transactions. Please try again.",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       sendTransaction({
-        to: stakingPool.contract_address,
-        value: parseEther(fundAmount), 
+        to: fundingContractAddress,
+        value: parseEther(fundAmount),
       });
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        title: "Transaction Initiation Failed",
+        description: error.message || "An unknown error occurred while preparing the transaction.",
+        variant: "destructive",
+      });
       console.error('Error sending transaction:', error);
     }
   };
@@ -112,9 +158,24 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
     if (isConfirmed) {
       // Optionally refresh data or show success toast
       console.log('Transaction confirmed!', hash);
+      toast({
+        title: "Transaction Confirmed",
+        description: `Successfully funded project with ${fundAmount} IP.`, // Corrected message
+        variant: "default", // Use 'default' or 'success' if available
+      });
       setFundAmount(''); // Clear the input after successful transaction
     }
-  }, [isConfirmed, hash]);
+  }, [isConfirmed, hash, fundAmount, toast]); // Added fundAmount and toast to dependencies
+
+  useEffect(() => {
+    if (sendError) {
+      toast({
+        title: "Transaction Failed",
+        description: sendError.message || "An unknown error occurred during transaction.",
+        variant: "destructive",
+      });
+    }
+  }, [sendError, toast]);
 
   return (
     <>
@@ -130,7 +191,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
             </Badge>
           </div>
         </CardHeader>
-
+        
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -158,13 +219,13 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 <Progress value={fundingPercentage} className="h-2" />
               </div>
             </div>
-
+          
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
+            <div>
                 <p className="text-gray-400">Staking APY</p>
-                <p className="text-white">{project.staking_apy}%</p>
-              </div>
-              <div>
+                <p className="text-white">{project.staking_apy || 'N/A'}%</p>
+            </div>
+            <div>
                 <p className="text-gray-400">Time Remaining</p>
                 <p className="text-white">{project.time_remaining}</p>
               </div>
@@ -175,46 +236,63 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 {project.category}
               </Badge>
               <span>•</span>
-              <span>by {artistName}</span>
+              {patent && (
+                <Badge variant="outline" className="neon-border">
+                  {patent.title} Patent
+                </Badge>
+              )}
             </div>
 
-            {stakingPool?.contract_address && (
+            <div className="flex space-x-2">
+            {project.staking_pool_id && (
               <Button
                 variant="outline"
-                className="w-full neon-border"
-                onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${stakingPool.contract_address}`, '_blank')}
+                className="neon-border"
+                onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${project.staking_pool_id}`, '_blank')}
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
-                View Contract
+                View Staking Contract
               </Button>
             )}
 
-            {!isConnected ? (
-              <div className="flex flex-col items-center gap-4 py-4">
-                <p className="text-gray-400">Connect your wallet to start funding</p>
-                <ConnectButton />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="number"
-                    placeholder="Amount (IP)"
-                    value={fundAmount}
-                    onChange={(e) => setFundAmount(e.target.value)}
-                    step="0.01"
-                    className="w-full bg-background/50 border border-white/10 rounded px-3 py-2 text-white text-sm"
-                  />
-                  <Button
-                    className="w-full bg-neon-gradient hover:opacity-90"
-                    onClick={handleFundNow}
-                    disabled={isSending || isConfirming || !stakingPool?.is_active || parseFloat(fundAmount) <= 0}
-                  >
-                    {isSending || isConfirming ? 'Processing...' : 'Fund Now'}
-                  </Button>
-                </div>
-              </>
+            {fundingContractAddress && (
+              <Button
+                variant="outline"
+                className="neon-border"
+                onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${fundingContractAddress}`, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Funding Contract
+              </Button>
             )}
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-300">
+                Fund Amount ($IP)
+              </label>
+              <Input
+                type="number"
+                value={fundAmount}
+                onChange={(e) => setFundAmount(e.target.value)}
+                placeholder="Enter amount to fund"
+                className="w-full px-4 py-3 bg-black/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2 w-full">
+              {!isConnected ? (
+                <ConnectButton label="Connect Wallet to Fund" />
+              ) : (
+                <Button
+                  onClick={handleFundNow}
+                  disabled={isSending || isConfirming || !fundAmount || parseFloat(fundAmount) <= 0 || !fundingContractAddress}
+                  className="w-full neon-button"
+                >
+                  {isSending ? 'Confirming...' : isConfirming ? 'Waiting for confirmation...' : 'Fund Now'}
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

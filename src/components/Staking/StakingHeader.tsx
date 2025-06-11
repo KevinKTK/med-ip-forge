@@ -1,13 +1,25 @@
-
 import { StatCard } from '@/components/Dashboard/StatCard';
 import { TrendingUp, Coins, Timer, Target, Palette } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-export const StakingHeader = () => {
+interface StakingHeaderProps {
+  onDeployNewPool: () => void;
+}
+
+export const StakingHeader = ({ onDeployNewPool }: StakingHeaderProps) => {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">$IP Token Staking</h1>
-        <p className="text-gray-400 mt-2">Stake Story Protocol $IP tokens into intellectual property assets and future creative projects</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">$IP Token Staking</h1>
+          <p className="text-gray-400 mt-2">Stake Story Protocol $IP tokens into intellectual property assets and future creative projects</p>
+        </div>
+        <Button
+          onClick={onDeployNewPool}
+          className="bg-neon-gradient hover:opacity-90"
+        >
+          Deploy New Pool
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">

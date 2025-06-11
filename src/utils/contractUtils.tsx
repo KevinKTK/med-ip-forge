@@ -1,24 +1,17 @@
 import Staking from '@/contracts/Staking.json';
+import Funding from '@/contracts/Funding.json';
 import {useState} from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
 import { supabase } from '@/integrations/supabase/client';
 import { storyAeneid } from 'wagmi/chains';
+import { parseEther } from 'viem';
 
 export class StakingError extends Error {
   constructor(message: string, public code: string) {
     super(message);
     this.name = 'StakingError';
   }
-}
-
-interface ProjectStakingPool {
-  projectId: number;
-  contractAddress: string;
-  deployerAddress: string;
-  deploymentDate: string;
-  apy: number;
-  lockupPeriods: number[];
 }
 
 export function useStakingPoolDeployer() {
@@ -28,7 +21,19 @@ export function useStakingPoolDeployer() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deployStakingPool = async (projectId: number, apy: number, lockupPeriods: number[]) => {
+  interface DeployParams {
+    projectId: number;
+    contractType: 'funding' | 'staking';
+    maxFunding?: number; // For Funding contract
+    apy?: number; // For Staking contract
+    poolName?: string; // For Staking contract
+    lockupPeriods?: number[]; // For Staking contract
+    totalPoolSize?: number; // For Staking contract
+  }
+
+  const deployContract = async (params: DeployParams) => {
+    const { projectId, contractType, maxFunding, apy, poolName, lockupPeriods, totalPoolSize } = params;
+
     if (!walletClient) {
       throw new StakingError("Wallet not connected", "WALLET_NOT_CONNECTED");
     }
@@ -37,30 +42,10 @@ export function useStakingPoolDeployer() {
     setError(null);
 
     try {
-      // Validate inputs
-      if (apy <= 0 || apy > 100) {
-        throw new StakingError("Invalid APY value", "INVALID_APY");
-      }
-
-      if (!lockupPeriods.length) {
-        throw new StakingError("Lockup periods are required", "INVALID_LOCKUP_PERIODS");
-      }
-
-      // Check if project already has a staking pool
-      const { data: existingPool } = await supabase
-        .from('staking_pools')
-        .select('*')
-        .eq('project_id', projectId)
-        .single();
-
-      if (existingPool) {
-        throw new StakingError("Project already has a staking pool", "POOL_EXISTS");
-      }
-
-      // Fetch project details to get the project name and artist_id
+      // Fetch project details to get the project name and artist_id, and target_funding
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .select('title, artist_id')
+        .select('title, artist_id, target_funding')
         .eq('id', projectId)
         .single();
 
@@ -89,16 +74,87 @@ export function useStakingPoolDeployer() {
 
       const artistName = artistData.name;
 
-      const stakingAbi = Staking.abi as any;
-      const stakingBytecode = Staking.bytecode.object as `0x${string}`;
+      let contractAbi: any;
+      let contractBytecode: `0x${string}`;
+      let contractArgs: any[];
+      let tableName: 'funding_contracts' | 'staking_pools';
+      let insertData: any;
+      let projectUpdateColumn: 'funding_contract_id' | 'staking_pool_id';
 
-      // Deploy the contract with required parameters
+      if (contractType === 'funding') {
+        if (maxFunding === undefined) {
+          throw new StakingError("maxFunding is required for funding contracts", "INVALID_ARGS");
+        }
+        contractAbi = Funding.abi as any;
+        contractBytecode = Funding.bytecode.object as `0x${string}`;
+        contractArgs = [parseEther(maxFunding.toString())];
+        tableName = 'funding_contracts';
+        insertData = {
+          project_id: projectId,
+          contract_address: '',
+          deployer_address: walletClient.account.address,
+          deployment_date: new Date().toISOString(),
+          max_funding: maxFunding,
+        };
+        projectUpdateColumn = 'funding_contract_id';
+      } else if (contractType === 'staking') {
+        if (apy === undefined || poolName === undefined || lockupPeriods === undefined || totalPoolSize === undefined) {
+          throw new StakingError("apy, poolName, lockupPeriods, and totalPoolSize are required for staking contracts", "INVALID_ARGS");
+        }
+        // Validate inputs for staking contract
+        if (apy <= 0 || apy > 100) {
+          throw new StakingError("Invalid APY value", "INVALID_APY");
+        }
+
+        if (!lockupPeriods.length) {
+          throw new StakingError("Lockup periods are required", "INVALID_LOCKUP_PERIODS");
+        }
+
+        contractAbi = Staking.abi as any;
+        contractBytecode = Staking.bytecode.object as `0x${string}`;
+        contractArgs = [apy, poolName, BigInt(totalPoolSize)];
+        tableName = 'staking_pools';
+        insertData = {
+          project_id: projectId,
+          contract_address: '',
+          deployer_address: walletClient.account.address,
+          deployment_date: new Date().toISOString(),
+          apy,
+          lockup_periods: lockupPeriods,
+          total_staked: 0,
+          total_stakers: 0,
+          is_active: true,
+          name: poolName,
+          description: `Staking pool for ${projectName} by ${artistName}`,
+          risk_level: 'Medium',
+          asset_type: 'IP',
+          current_completion: 0,
+          total_pool_size: totalPoolSize,
+          available_capacity: totalPoolSize,
+        };
+        projectUpdateColumn = 'staking_pool_id';
+      } else {
+        throw new StakingError("Invalid contract type specified", "INVALID_CONTRACT_TYPE");
+      }
+
+      // Check if project already has a deployed contract of this type
+      const { data: existingContract } = await supabase
+        .from(tableName)
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+      if (existingContract) {
+        throw new StakingError(`Project already has a deployed ${contractType} contract`, "CONTRACT_EXISTS");
+      }
+
+      // Deploy the contract
       const hash = await walletClient.deployContract({
-        abi: stakingAbi,
-        bytecode: stakingBytecode,
-        args: [apy, `${projectName} Staking Pool`, BigInt(1000000)],
+        abi: contractAbi,
+        bytecode: contractBytecode,
+        args: contractArgs,
         type: 'eip1559',
-        chain: storyAeneid
+        chain: storyAeneid,
       });
 
       // Wait for the transaction to be confirmed
@@ -108,27 +164,13 @@ export function useStakingPoolDeployer() {
         throw new StakingError("Deployment failed: contract address not found", "DEPLOYMENT_FAILED");
       }
 
-      // Store the deployed contract information in Supabase with all required fields
-      const { data: newPool, error: dbError } = await supabase
-        .from('staking_pools')
-        .insert({
-          project_id: projectId,
-          contract_address: receipt.contractAddress,
-          deployer_address: walletClient.account.address,
-          deployment_date: new Date().toISOString(),
-          apy,
-          lockup_periods: lockupPeriods,
-          total_staked: 0,
-          total_stakers: 0,
-          is_active: true,
-          name: `${projectName} Staking Pool`,
-          description: `Staking pool for ${projectName} by ${artistName}`,
-          risk_level: 'Medium',
-          asset_type: 'IP',
-          current_completion: 0,
-          total_pool_size: 1000000,
-          available_capacity: 1000000,
-        })
+      // Update insertData with the deployed contract address
+      insertData.contract_address = receipt.contractAddress;
+
+      // Store the deployed contract information in Supabase
+      const { data: newContractRecord, error: dbError } = await supabase
+        .from(tableName)
+        .insert(insertData)
         .select()
         .single();
 
@@ -136,7 +178,17 @@ export function useStakingPoolDeployer() {
         throw new StakingError(`Database error: ${dbError.message}`, "DB_ERROR");
       }
 
-      return newPool;
+      // Update the project with the new contract ID
+      const { error: projectUpdateError } = await supabase
+        .from('projects')
+        .update({ [projectUpdateColumn]: newContractRecord.id })
+        .eq('id', projectId);
+
+      if (projectUpdateError) {
+        throw new StakingError(`Database error updating project: ${projectUpdateError.message}`, "PROJECT_UPDATE_ERROR");
+      }
+
+      return newContractRecord;
 
     } catch (err) {
       if (err instanceof StakingError) {
@@ -159,62 +211,8 @@ export function useStakingPoolDeployer() {
     }
   };
 
-  const getStakingPool = async (projectId: number) => {
-    try {
-      const { data, error } = await supabase
-        .from('staking_pools')
-        .select('*')
-        .eq('project_id', projectId)
-        .single();
-
-      if (error) {
-        throw new StakingError(`Database error: ${error.message}`, "DB_ERROR");
-      }
-
-      return data;
-    } catch (err) {
-      if (err instanceof StakingError) {
-        throw err;
-      }
-      throw new StakingError(
-        err instanceof Error ? err.message : "Failed to fetch staking pool",
-        "FETCH_ERROR"
-      );
-    }
-  };
-
-  const updateStakingPool = async (
-    projectId: number,
-    updates: any
-  ) => {
-    try {
-      const { data, error } = await supabase
-        .from('staking_pools')
-        .update(updates)
-        .eq('project_id', projectId)
-        .select()
-        .single();
-
-      if (error) {
-        throw new StakingError(`Database error: ${error.message}`, "DB_ERROR");
-      }
-
-      return data;
-    } catch (err) {
-      if (err instanceof StakingError) {
-        throw err;
-      }
-      throw new StakingError(
-        err instanceof Error ? err.message : "Failed to update staking pool",
-        "UPDATE_ERROR"
-      );
-    }
-  };
-
   return {
-    deployStakingPool,
-    getStakingPool,
-    updateStakingPool,
+    deployContract,
     isDeploying,
     error,
   };
