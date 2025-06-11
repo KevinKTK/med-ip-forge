@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { TrendingUp, Users, Clock, Shield, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStaking } from '@/hooks/useStaking';
+
 interface StakingPoolCardProps {
   pool: {
     name: string;
@@ -31,8 +31,6 @@ const formatIP = (amount: number) => {
     maximumFractionDigits: 2,
   }).format(amount) + ' IP';
 };
-
-
 
 export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName }) => {
   const {totalStakedOnChain} = useStaking(project.id);
@@ -87,7 +85,11 @@ export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project,
             </p>
             <Badge variant="secondary">{pool.risk_level}</Badge>
           </div>
-          <Button variant="outline" className="neon-border">
+          <Button
+            variant="outline"
+            className="neon-border"
+            onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${pool.contract_address}`, '_blank')}
+          >
             <ExternalLink className="w-4 h-4 mr-2" />
             View Contract
           </Button>

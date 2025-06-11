@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Clock, Target, Star, Coins, FileText } from 'lucide-react';
+import { TrendingUp, Clock, Target, Star, Coins, FileText, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { StakeProjectModal } from './StakeProjectModal';
 import { StakingModal } from '@/components/Staking/StakingModal';
@@ -177,6 +177,17 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
               <span>•</span>
               <span>by {artistName}</span>
             </div>
+
+            {stakingPool?.contract_address && (
+              <Button
+                variant="outline"
+                className="w-full neon-border"
+                onClick={() => window.open(`https://aeneid.storyscan.xyz/address/${stakingPool.contract_address}`, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Contract
+              </Button>
+            )}
 
             {!isConnected ? (
               <div className="flex flex-col items-center gap-4 py-4">
