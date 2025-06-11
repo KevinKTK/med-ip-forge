@@ -1,16 +1,16 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { createConfig, http } from 'wagmi';
-import { storyTestnet } from 'wagmi/chains';
+import { storyAeneid } from 'wagmi/chains';
 import { supabase } from "@/integrations/supabase/client";
 
 // Function to get API keys from Supabase
 const getApiKeys = async () => {
   try {
     const { data, error } = await supabase.functions.invoke('get-api-keys');
-    
+
     if (error) throw error;
-    
+
     return data;
   } catch (error) {
     console.error('Failed to get API keys from Supabase:', error);
@@ -33,9 +33,9 @@ const getRainbowKitConfig = async () => {
     });
 
     return createConfig({
-      chains: [storyTestnet],
+      chains: [storyAeneid],
       transports: {
-        [storyTestnet.id]: http(),
+        [storyAeneid.id]: http(),
       },
       connectors,
     });
@@ -48,9 +48,9 @@ const getRainbowKitConfig = async () => {
     });
 
     return createConfig({
-      chains: [storyTestnet],
+      chains: [storyAeneid],
       transports: {
-        [storyTestnet.id]: http(),
+        [storyAeneid.id]: http(),
       },
       connectors,
     });
@@ -67,9 +67,9 @@ const { connectors } = getDefaultWallets({
 });
 
 export const wagmiConfig = createConfig({
-  chains: [storyTestnet],
+  chains: [storyAeneid],
   transports: {
-    [storyTestnet.id]: http(),
+    [storyAeneid.id]: http(),
   },
   connectors,
 });
