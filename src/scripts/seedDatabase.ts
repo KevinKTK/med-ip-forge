@@ -104,8 +104,8 @@ const mockStakingPools = [
   {
     name: "AI Music Staking Pool",
     description: "Stake your IP tokens to support AI-powered music composition",
-    contract_address: "0x1234567890123456789012345678901234567890",
-    deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
+    contract_address: "0x62dF7Ef33F80aBd8CEd50dDE9e32fc0919F08596",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 15,
     lockup_periods: [30, 60, 90],
@@ -123,8 +123,8 @@ const mockStakingPools = [
   {
     name: "Digital Art Staking Pool",
     description: "Support digital art creation with your IP tokens",
-    contract_address: "0x2345678901234567890123456789012345678901",
-    deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
+    contract_address: "0xF4d0935345776149Aa9A665CA524C2746639789A",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 12,
     lockup_periods: [30, 60, 90],
@@ -142,8 +142,8 @@ const mockStakingPools = [
   {
     name: "Storytelling Staking Pool",
     description: "Invest in interactive storytelling innovation",
-    contract_address: "0x3456789012345678901234567890123456789012",
-    deployer_address: "0xabcdef1234567890abcdef1234567890abcdef12",
+    contract_address: "0x68343AcA82DEd3A173aD9CF09d1804d5fD727DAE",
+    deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 18,
     lockup_periods: [30, 60, 90],
@@ -248,4 +248,4 @@ async function seedDatabase() {
 }
 
 // Run the seeding function
-seedDatabase(); 
+seedDatabase();
