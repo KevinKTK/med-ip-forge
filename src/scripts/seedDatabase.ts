@@ -104,7 +104,7 @@ const mockStakingPools = [
   {
     name: "AI Music Staking Pool",
     description: "Stake your IP tokens to support AI-powered music composition",
-    contract_address: "0x62dF7Ef33F80aBd8CEd50dDE9e32fc0919F08596",
+    contract_address: "0x671F162703054C27A321d184073795007cb76f1D",
     deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 15,
@@ -123,7 +123,7 @@ const mockStakingPools = [
   {
     name: "Digital Art Staking Pool",
     description: "Support digital art creation with your IP tokens",
-    contract_address: "0xF4d0935345776149Aa9A665CA524C2746639789A",
+    contract_address: "0x3e6294c2F8BBaD89c6E8A407d78526F651e52e33",
     deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 12,
@@ -142,7 +142,7 @@ const mockStakingPools = [
   {
     name: "Storytelling Staking Pool",
     description: "Invest in interactive storytelling innovation",
-    contract_address: "0x68343AcA82DEd3A173aD9CF09d1804d5fD727DAE",
+    contract_address: "0x2D18C65f20d22Fca50c9F5FFCC2C536bd19F68A6",
     deployer_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1",
     deployment_date: new Date().toISOString(),
     apy: 18,

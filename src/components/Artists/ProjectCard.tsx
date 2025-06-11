@@ -1,16 +1,16 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, Clock, Target, Star, Coins, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StakeProjectModal } from './StakeProjectModal';
 import { StakingModal } from '@/components/Staking/StakingModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useStaking } from '@/hooks/useStaking';
-import { useAccount } from 'wagmi';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { parseEther } from 'viem';
 
 interface Project {
   id: number;
@@ -49,6 +49,11 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
   const { handleStake, isStaking, totalStakedOnChain } = useStaking(project.id);
   const { isConnected } = useAccount();
 
+  const { data: hash, sendTransaction, isPending: isSending } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
+
   const completionPercentage = (project.completed_milestones / project.milestones) * 100;
   const fundingPercentage = ((project.current_funding + totalStakedOnChain) / project.target_funding) * 100;
 
@@ -72,10 +77,28 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
     }).format(amount) + ' IP';
   };
 
-  const handleStakeClick = async (amount: string) => {
-    if (!stakingPool) return;
-    await handleStake(amount);
+  const handleFundNow = async () => {
+    if (!stakingPool?.contract_address) {
+      console.error("Staking pool contract address is missing.");
+      return;
+    }
+
+    try {
+      sendTransaction({
+        to: stakingPool.contract_address,
+        value: parseEther('0.01'), // Example fixed amount for direct funding
+      });
+    } catch (error) {
+      console.error('Error sending transaction:', error);
+    }
   };
+
+  useEffect(() => {
+    if (isConfirmed) {
+      // Optionally refresh data or show success toast
+      console.log('Transaction confirmed!', hash);
+    }
+  }, [isConfirmed, hash]);
 
   return (
     <>
@@ -141,30 +164,21 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
 
             {!isConnected ? (
               <div className="flex flex-col items-center gap-4 py-4">
-                <p className="text-gray-400">Connect your wallet to start staking</p>
+                <p className="text-gray-400">Connect your wallet to start funding</p>
                 <ConnectButton />
               </div>
             ) : (
               <Button
                 className="w-full bg-neon-gradient hover:opacity-90"
-                onClick={() => setIsModalOpen(true)}
-                disabled={isStaking || !stakingPool?.is_active}
+                onClick={handleFundNow}
+                disabled={isSending || isConfirming || !stakingPool?.is_active}
               >
-                {isStaking ? 'Processing...' : 'Fund Now'}
+                {isSending || isConfirming ? 'Processing...' : 'Fund Now'}
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
-
-      {stakingPool && (
-        <StakingModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          stakingPool={stakingPool}
-          project={project}
-        />
-      )}
     </>
   );
 };
