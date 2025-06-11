@@ -8,9 +8,10 @@ import { StakeProjectModal } from './StakeProjectModal';
 import { StakingModal } from '@/components/Staking/StakingModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useStaking } from '@/hooks/useStaking';
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt, useBalance } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther } from 'viem';
+import { Input } from '@/components/ui/input';
 
 interface Project {
   id: number;
@@ -46,7 +47,7 @@ interface ProjectCardProps {
 
 export const ProjectCard = ({ project, artistName, stakingPool, patent }: ProjectCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { handleStake, isStaking, totalStakedOnChain } = useStaking(project.id);
+  const { handleStake, isStaking } = useStaking(project.id);
   const { isConnected } = useAccount();
 
   const { data: hash, sendTransaction, isPending: isSending } = useSendTransaction();
@@ -54,8 +55,16 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
     hash,
   });
 
+  const { data: contractBalanceData } = useBalance({
+    address: stakingPool?.contract_address as `0x${string}`,
+  });
+
+  const contractBalance = contractBalanceData ? parseFloat(contractBalanceData.formatted) : 0;
+
+  const [fundAmount, setFundAmount] = useState('');
+
   const completionPercentage = (project.completed_milestones / project.milestones) * 100;
-  const fundingPercentage = ((project.current_funding + totalStakedOnChain) / project.target_funding) * 100;
+  const fundingPercentage = ((project.current_funding + contractBalance) / project.target_funding) * 100;
 
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
@@ -83,10 +92,16 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
       return;
     }
 
+    const parsedAmount = parseFloat(fundAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      console.error("Invalid funding amount.");
+      return;
+    }
+
     try {
       sendTransaction({
         to: stakingPool.contract_address,
-        value: parseEther('0.01'), // Example fixed amount for direct funding
+        value: parseEther(fundAmount), 
       });
     } catch (error) {
       console.error('Error sending transaction:', error);
@@ -97,6 +112,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
     if (isConfirmed) {
       // Optionally refresh data or show success toast
       console.log('Transaction confirmed!', hash);
+      setFundAmount(''); // Clear the input after successful transaction
     }
   }, [isConfirmed, hash]);
 
@@ -125,7 +141,7 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
               <Progress value={fundingPercentage} className="h-2" />
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Current Funding</span>
-                <span className="text-2xl font-bold text-white">{formatIP(project.current_funding+ totalStakedOnChain)}</span>
+                <span className="text-2xl font-bold text-white">{formatIP(project.current_funding + contractBalance)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Target Funding</span>
@@ -168,13 +184,25 @@ export const ProjectCard = ({ project, artistName, stakingPool, patent }: Projec
                 <ConnectButton />
               </div>
             ) : (
-              <Button
-                className="w-full bg-neon-gradient hover:opacity-90"
-                onClick={handleFundNow}
-                disabled={isSending || isConfirming || !stakingPool?.is_active}
-              >
-                {isSending || isConfirming ? 'Processing...' : 'Fund Now'}
-              </Button>
+              <>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="number"
+                    placeholder="Amount (IP)"
+                    value={fundAmount}
+                    onChange={(e) => setFundAmount(e.target.value)}
+                    step="0.01"
+                    className="w-full bg-background/50 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                  />
+                  <Button
+                    className="w-full bg-neon-gradient hover:opacity-90"
+                    onClick={handleFundNow}
+                    disabled={isSending || isConfirming || !stakingPool?.is_active || parseFloat(fundAmount) <= 0}
+                  >
+                    {isSending || isConfirming ? 'Processing...' : 'Fund Now'}
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </CardContent>
