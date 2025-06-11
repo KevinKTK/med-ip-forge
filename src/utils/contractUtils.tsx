@@ -66,7 +66,8 @@ export function useStakingPoolDeployer() {
         abi: stakingAbi,
         bytecode: stakingBytecode,
         args: [apy, `Project ${projectId} Staking Pool`, BigInt(1000000)],
-        type: 'eip1559'
+        type: 'eip1559',
+        chain: storyTestnet
       });
 
       // Wait for the transaction to be confirmed

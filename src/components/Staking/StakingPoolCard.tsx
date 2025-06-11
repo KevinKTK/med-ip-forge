@@ -22,14 +22,18 @@ interface StakingPoolCardProps {
     title: string;
     description: string;
   };
+  artistName: string;
 }
 
-export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project }) => {
+export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName }) => {
   return (
     <Card className="glass-card neon-border">
       <CardHeader>
         <CardTitle className="text-white">{pool.name}</CardTitle>
         <CardDescription className="text-gray-400">{pool.description}</CardDescription>
+        {artistName && (
+          <p className="text-sm text-gray-500">by {artistName}</p>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
