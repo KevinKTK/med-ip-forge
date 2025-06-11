@@ -1,9 +1,8 @@
-
 "use client";
 import '@tomo-inc/tomo-evm-kit/styles.css';
 import { getDefaultConfig, TomoEVMKitProvider } from "@tomo-inc/tomo-evm-kit";
 import { aeneid } from "@story-protocol/core-sdk";
-import { supabase } from "@/utils/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 // Function to get Tomo configuration from Supabase secrets
 const getTomoConfig = async () => {

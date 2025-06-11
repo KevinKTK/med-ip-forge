@@ -1,9 +1,22 @@
-
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { createConfig, http } from 'wagmi';
 import { storyTestnet } from 'wagmi/chains';
-import { getApiKeys } from "@/utils/supabase";
+import { supabase } from "@/integrations/supabase/client";
+
+// Function to get API keys from Supabase
+const getApiKeys = async () => {
+  try {
+    const { data, error } = await supabase.functions.invoke('get-api-keys');
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Failed to get API keys from Supabase:', error);
+    return null;
+  }
+};
 
 // Function to get RainbowKit configuration from Supabase secrets
 const getRainbowKitConfig = async () => {

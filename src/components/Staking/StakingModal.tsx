@@ -1,33 +1,43 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { X, Calendar, TrendingUp, Lock, Calculator } from 'lucide-react';
+import { X, Calendar, TrendingUp, Lock, Calculator, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface StakingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  project: {
-    name: string;
-    ticker: string;
-    description: string;
-    completion: number;
+  stakingPool: {
+    id: number;
+    project_id: number;
+    contract_address: string;
     apy: number;
-    contractAddress: string;
-  } | null;
+    name: string;
+    description: string;
+    current_completion: number;
+  };
+  project: {
+    id: number;
+    title: string;
+    description: string;
+    target_funding: number;
+    current_funding: number;
+    category: string;
+  };
 }
 
-export const StakingModal = ({ isOpen, onClose, project }: StakingModalProps) => {
+export const StakingModal = ({ isOpen, onClose, stakingPool, project }: StakingModalProps) => {
   const [stakeAmount, setStakeAmount] = useState('');
   const [lockupPeriod, setLockupPeriod] = useState(30); // Default to 30 days
   const [estimatedRewards, setEstimatedRewards] = useState(0);
 
-  if (!isOpen || !project) return null;
+  if (!isOpen || !stakingPool || !project) return null;
 
   const calculateRewards = () => {
     const amount = parseFloat(stakeAmount) || 0;
-    const apy = project.apy || 0;
+    const apy = stakingPool.apy || 0;
     const timeInYears = lockupPeriod / 365;
     return amount * (apy / 100) * timeInYears;
   };
@@ -43,7 +53,7 @@ export const StakingModal = ({ isOpen, onClose, project }: StakingModalProps) =>
   };
 
   const handleStake = async () => {
-    console.log(`Staking ${stakeAmount} for ${lockupPeriod} days in ${project.name}`);
+    console.log(`Staking ${stakeAmount} for ${lockupPeriod} days in ${project.title}`);
     // Handle staking logic here
     onClose();
   };
@@ -60,27 +70,27 @@ export const StakingModal = ({ isOpen, onClose, project }: StakingModalProps) =>
 
         <div className="space-y-4">
           <div className="p-4 bg-black/30 rounded-lg">
-            <h4 className="font-semibold text-white">{project.name}</h4>
-            <p className="text-sm text-gray-400">{project.ticker}</p>
+            <h4 className="font-semibold text-white">{project.title}</h4>
+            <p className="text-sm text-gray-400">{project.category}</p>
             <p className="text-sm text-gray-300 mt-2">{project.description}</p>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Current Progress</span>
-              <span className="text-neon-blue">{project.completion}%</span>
+              <span className="text-neon-blue">{stakingPool.current_completion}%</span>
             </div>
-            <Progress value={project.completion} className="h-2" />
+            <Progress value={stakingPool.current_completion} className="h-2" />
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="p-3 bg-black/30 rounded">
               <p className="text-gray-400">APY</p>
-              <p className="font-semibold text-white">{project.apy}%</p>
+              <p className="font-semibold text-white">{stakingPool.apy}%</p>
             </div>
             <div className="p-3 bg-black/30 rounded">
               <p className="text-gray-400">Contract</p>
-              <a href={`https://etherscan.io/address/${project.contractAddress}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-neon-blue flex items-center">
+              <a href={`https://etherscan.io/address/${stakingPool.contract_address}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-neon-blue flex items-center">
                 View <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             </div>

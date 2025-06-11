@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,9 +17,14 @@ interface StakingPoolCardProps {
     risk_level: string;
     contract_address: string;
   };
+  project?: {
+    id: number;
+    title: string;
+    description: string;
+  };
 }
 
-export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool }) => {
+export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project }) => {
   return (
     <Card className="glass-card neon-border">
       <CardHeader>
