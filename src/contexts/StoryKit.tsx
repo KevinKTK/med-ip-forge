@@ -18,10 +18,10 @@ const getApiKeys = async () => {
 };
 
 // Export a function that returns the client after configuration, accepting the account
-export const getStoryClient = async (account: Account) => {
+export const getStoryClient = async (account: `0x${string}`) => {
   const { transport, chainId } = await getStoryRpcConfig();
   const config: StoryConfig = {
-    account: account,
+    account: account as Account,
     transport: transport,
     chainId: chainId
   };

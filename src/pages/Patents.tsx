@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { PatentsHeader } from '@/components/Patents/PatentsHeader';
@@ -8,11 +7,14 @@ import { ProjectLeaderboard } from '@/components/Patents/ProjectLeaderboard';
 import { WalletSelector } from '@/components/Patents/WalletSelector';
 import { StakingHistory } from '@/components/Patents/StakingHistory';
 import { VotingModal } from '@/components/Patents/VotingModal';
+import PatentManagement from '@/components/Patents/PatentManagement';
+import { RegisterPatentModal } from '@/components/Patents/RegisterPatentModal';
 
 const Patents = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [selectedProject, setSelectedProject] = useState(null);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
+  const [isCreatePatentModalOpen, setIsCreatePatentModalOpen] = useState(false);
   
   const mockProjects = [
     {
@@ -61,10 +63,15 @@ const Patents = () => {
     setIsVotingModalOpen(true);
   };
 
+  const handleRegisterPatent = async (patentData: any) => {
+    console.log('Patent registered:', patentData);
+    setIsCreatePatentModalOpen(false);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
-        <PatentsHeader />
+        <PatentsHeader onOpenCreatePatentModal={() => setIsCreatePatentModalOpen(true)} />
         
         <div className="flex space-x-4 mb-6">
           <button
@@ -107,6 +114,16 @@ const Patents = () => {
           >
             History
           </button>
+          <button
+            onClick={() => setActiveTab('patents')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'patents'
+                ? 'bg-neon-gradient text-white'
+                : 'text-gray-400 hover:text-white border border-gray-600'
+            }`}
+          >
+            My Patents
+          </button>
         </div>
 
         {activeTab === 'projects' && (
@@ -127,12 +144,25 @@ const Patents = () => {
         {activeTab === 'leaderboard' && <ProjectLeaderboard projects={mockProjects} />}
         {activeTab === 'wallet' && <WalletSelector />}
         {activeTab === 'history' && <StakingHistory />}
+        {activeTab === 'patents' && (
+          <PatentManagement
+            isModalOpen={false}
+            setIsModalOpen={() => {}}
+          />
+        )}
 
         <VotingModal
           isOpen={isVotingModalOpen}
           onClose={() => setIsVotingModalOpen(false)}
           project={selectedProject}
         />
+        
+        <RegisterPatentModal
+          isOpen={isCreatePatentModalOpen}
+          onClose={() => setIsCreatePatentModalOpen(false)}
+          onSubmit={handleRegisterPatent}
+        />
+
       </div>
     </Layout>
   );

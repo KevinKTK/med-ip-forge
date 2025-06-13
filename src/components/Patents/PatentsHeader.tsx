@@ -1,15 +1,24 @@
-
 import { StatCard } from '@/components/Dashboard/StatCard';
 import { Vote, TrendingUp, Coins, Target, Users } from 'lucide-react';
 
-export const PatentsHeader = () => {
+interface PatentsHeaderProps {
+  onOpenCreatePatentModal: () => void;
+}
+
+export const PatentsHeader = ({ onOpenCreatePatentModal }: PatentsHeaderProps) => {
   return (
-    <div className="space-y-6">
-      <div className="text-center">
+    <div className="space-y-6 w-full">
+      <div className="flex justify-between items-center text-center">
         <h1 className="text-4xl font-retro neon-text mb-4 glitch-text" data-text="PATENTS GOVERNANCE">PATENTS GOVERNANCE</h1>
-        <p className="text-cyber-purple/80 font-pixel text-lg">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
+        <button
+          onClick={onOpenCreatePatentModal}
+          className="px-4 py-2 transition-colors bg-neon-gradient hover:opacity-90 text-xl text-black"
+        >
+          + Create New Patent
+        </button>
       </div>
-      
+      <p className="text-cyber-purple/80 font-pixel text-lg text-center">Use $IP tokens to vote on which innovative projects receive funding through democratic governance</p>
+
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <StatCard
           title="Active Proposals"

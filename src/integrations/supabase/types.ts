@@ -24,6 +24,7 @@ export type Database = {
           total_raised: number
           updated_at: string
           verified: boolean
+          wallet_address: string | null
         }
         Insert: {
           avatar?: string | null
@@ -39,6 +40,7 @@ export type Database = {
           total_raised?: number
           updated_at?: string
           verified?: boolean
+          wallet_address?: string | null
         }
         Update: {
           avatar?: string | null
@@ -54,46 +56,110 @@ export type Database = {
           total_raised?: number
           updated_at?: string
           verified?: boolean
+          wallet_address?: string | null
         }
         Relationships: []
       }
-      patents: {
+      funding_contracts: {
         Row: {
+          contract_address: string
           created_at: string
-          description: string
-          filing_date: string
+          deployer_address: string
+          deployment_date: string
           id: number
-          patent_number: string
-          project_id: number
-          status: string
-          title: string
+          max_funding: number
+          project_id: number | null
           updated_at: string
         }
         Insert: {
+          contract_address: string
           created_at?: string
-          description: string
-          filing_date: string
+          deployer_address: string
+          deployment_date: string
           id?: never
-          patent_number: string
-          project_id: number
-          status: string
-          title: string
+          max_funding: number
+          project_id?: number | null
           updated_at?: string
         }
         Update: {
+          contract_address?: string
           created_at?: string
-          description?: string
-          filing_date?: string
+          deployer_address?: string
+          deployment_date?: string
           id?: never
-          patent_number?: string
-          project_id?: number
-          status?: string
-          title?: string
+          max_funding?: number
+          project_id?: number | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "patents_project_id_fkey"
+            foreignKeyName: "fk_funding_contracts_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patents: {
+        Row: {
+          artist_id: number
+          created_at: string
+          description: string
+          id: string
+          ip_id: string | null
+          ip_metadata_hash: string
+          ip_metadata_uri: string
+          license_terms_ids: string[] | null
+          nft_metadata_hash: string
+          nft_metadata_uri: string
+          project_id: number
+          status: string
+          title: string
+          transaction_hash: string | null
+        }
+        Insert: {
+          artist_id: number
+          created_at?: string
+          description: string
+          id?: string
+          ip_id?: string | null
+          ip_metadata_hash: string
+          ip_metadata_uri: string
+          license_terms_ids?: string[] | null
+          nft_metadata_hash: string
+          nft_metadata_uri: string
+          project_id: number
+          status: string
+          title: string
+          transaction_hash?: string | null
+        }
+        Update: {
+          artist_id?: number
+          created_at?: string
+          description?: string
+          id?: string
+          ip_id?: string | null
+          ip_metadata_hash?: string
+          ip_metadata_uri?: string
+          license_terms_ids?: string[] | null
+          nft_metadata_hash?: string
+          nft_metadata_uri?: string
+          project_id?: number
+          status?: string
+          title?: string
+          transaction_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_patents_artist_id"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_patents_project_id"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -109,17 +175,17 @@ export type Database = {
           created_at: string
           current_funding: number
           description: string
+          funding_contract_id: number | null
           id: number
           milestones: number
           risk_level: string
-          staking_apy: number | null
+          staking_apy: number
           staking_pool_id: number | null
           status: string
           target_funding: number
           time_remaining: string
           title: string
           updated_at: string
-          funding_contract_id: number | null
         }
         Insert: {
           artist_id: number
@@ -128,17 +194,17 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description: string
+          funding_contract_id?: number | null
           id?: never
           milestones: number
           risk_level: string
-          staking_apy?: number | null
+          staking_apy: number
           staking_pool_id?: number | null
           status?: string
           target_funding: number
           time_remaining: string
           title: string
           updated_at?: string
-          funding_contract_id?: number | null
         }
         Update: {
           artist_id?: number
@@ -147,79 +213,38 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description?: string
+          funding_contract_id?: number | null
           id?: never
           milestones?: number
           risk_level?: string
-          staking_apy?: number | null
+          staking_apy?: number
           staking_pool_id?: number | null
           status?: string
           target_funding?: number
           time_remaining?: string
           title?: string
           updated_at?: string
-          funding_contract_id?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "projects_artist_id_fkey"
-            columns: ["artist_id"]
+            foreignKeyName: "fk_projects_funding_contract_id"
+            columns: ["funding_contract_id"]
             isOneToOne: false
-            referencedRelation: "artists"
+            referencedRelation: "funding_contracts"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "projects_staking_pool_id_fkey"
+            foreignKeyName: "fk_projects_staking_pool_id"
             columns: ["staking_pool_id"]
             isOneToOne: false
             referencedRelation: "staking_pools"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "projects_funding_contract_id_fkey"
-            columns: ["funding_contract_id"]
+            foreignKeyName: "projects_artist_id_fkey"
+            columns: ["artist_id"]
             isOneToOne: false
-            referencedRelation: "funding_contracts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      funding_contracts: {
-        Row: {
-          id: number
-          project_id: number
-          contract_address: string
-          deployer_address: string
-          deployment_date: string
-          max_funding: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: never
-          project_id: number
-          contract_address: string
-          deployer_address: string
-          deployment_date: string
-          max_funding: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: never
-          project_id?: number
-          contract_address?: string
-          deployer_address?: string
-          deployment_date?: string
-          max_funding?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "funding_contracts_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "artists"
             referencedColumns: ["id"]
           },
         ]
@@ -290,7 +315,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "staking_pools_project_id_fkey"
+            foreignKeyName: "fk_staking_pools_project_id"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -314,113 +339,11 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database['public']
 
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+export type Tables<TableName extends keyof PublicSchema['Tables']> =
+  PublicSchema['Tables'][TableName]['Row']
+export type Enums<EnumName extends keyof PublicSchema['Enums']> =
+  PublicSchema['Enums'][EnumName]
 
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
+export type Patent = Tables<'patents'>;

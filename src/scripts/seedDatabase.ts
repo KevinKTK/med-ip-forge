@@ -99,7 +99,6 @@ const mockProjects = [
     updated_at: new Date().toISOString(),
   }
 ];
-
 const mockStakingPools = [
   {
     name: "AI Music Staking Pool",
@@ -183,52 +182,86 @@ const mockFundingContracts = [
 
 const mockPatents = [
   {
+    artist_id: 1, // This will be set dynamically
+    project_id: 1, // This will be set dynamically
     title: "AI Music Composition System",
     description: "A system for generating music based on emotional inputs using machine learning",
-    status: "Pending",
-    filing_date: new Date().toISOString(),
-    patent_number: "US2023000001",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample1",
+    ip_metadata_hash: "0x123...",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample2",
+    nft_metadata_hash: "0x456...",
+    status: "pending",
+    created_at: new Date().toISOString()
   },
   {
+    artist_id: 2, // This will be set dynamically
+    project_id: 2, // This will be set dynamically
     title: "Digital Art Generation with AR",
     description: "Method for creating and displaying digital art with augmented reality features",
-    status: "Granted",
-    filing_date: new Date().toISOString(),
-    patent_number: "US2023000002",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample3",
+    ip_metadata_hash: "0x789...",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample4",
+    nft_metadata_hash: "0xabc...",
+    status: "registered",
+    created_at: new Date().toISOString()
   },
   {
+    artist_id: 3, // This will be set dynamically
+    project_id: 3, // This will be set dynamically
     title: "Interactive Story Generation Platform",
     description: "System for creating branching narrative structures with user interaction",
-    status: "Pending",
-    filing_date: new Date().toISOString(),
-    patent_number: "US2023000003",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample5",
+    ip_metadata_hash: "0xdef...",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample6",
+    nft_metadata_hash: "0xghi...",
+    status: "pending",
+    created_at: new Date().toISOString()
   }
 ];
 
+// Add error handling function
+async function handleSupabaseError(operation: string, error: any) {
+  console.error(`Error during ${operation}:`, {
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+    code: error.code
+  });
+  throw error;
+}
+
 async function seedDatabase() {
   try {
+    // Test connection first
+    const { data: testData, error: testError } = await supabase
+        .from('artists')
+        .select('count')
+        .limit(1);
+
+    if (testError) {
+      throw  new Error(`Failed to connect to Supabase: ${testError.message}`);
+    }
+
     // Insert artists first
     const { data: artists, error: artistsError } = await supabase
-      .from('artists')
-      .insert(mockArtists)
-      .select();
+        .from('artists')
+        .insert(mockArtists)
+        .select();
 
-    if (artistsError) throw artistsError;
+    if (artistsError) {
+      await handleSupabaseError('artists insertion', artistsError);
+    }
     console.log('Artists seeded successfully');
 
     // Insert funding contracts
     const { data: fundingContracts, error: fundingContractsError } = await supabase
-      .from('funding_contracts')
-      .insert(mockFundingContracts)
-      .select();
+        .from('funding_contracts')
+        .insert(mockFundingContracts)
+        .select();
 
-    if (fundingContractsError) throw fundingContractsError;
+    if (fundingContractsError) {
+      await handleSupabaseError('funding contracts insertion', fundingContractsError);
+    }
     console.log('Funding contracts seeded successfully');
 
     // Insert projects with artist_id and funding_contract_id
@@ -239,11 +272,13 @@ async function seedDatabase() {
     }));
 
     const { data: projects, error: projectsError } = await supabase
-      .from('projects')
-      .insert(projectsWithArtistsAndFunding)
-      .select();
+        .from('projects')
+        .insert(projectsWithArtistsAndFunding)
+        .select();
 
-    if (projectsError) throw projectsError;
+    if (projectsError) {
+      await handleSupabaseError('projects insertion', projectsError);
+    }
     console.log('Projects seeded successfully');
 
     // Insert staking pools with project_id
@@ -253,28 +288,34 @@ async function seedDatabase() {
     }));
 
     const { error: poolsError } = await supabase
-      .from('staking_pools')
-      .insert(stakingPoolsWithProjects);
+        .from('staking_pools')
+        .insert(stakingPoolsWithProjects);
 
-    if (poolsError) throw poolsError;
+    if (poolsError) {
+      await handleSupabaseError('staking pools insertion', poolsError);
+    }
     console.log('Staking pools seeded successfully');
 
-    // Insert patents with project_id
-    const patentsWithProjects = mockPatents.map((patent, index) => ({
+    // Insert patents with project_id and artist_id
+    const patentsWithProjectsAndArtists = mockPatents.map((patent, index) => ({
       ...patent,
-      project_id: projects[index].id
+      project_id: projects[index].id,
+      artist_id: artists[index].id
     }));
 
     const { error: patentsError } = await supabase
-      .from('patents')
-      .insert(patentsWithProjects);
+        .from('patents')
+        .insert(patentsWithProjectsAndArtists);
 
-    if (patentsError) throw patentsError;
+    if (patentsError) {
+      await handleSupabaseError('patents insertion', patentsError);
+    }
     console.log('Patents seeded successfully');
 
     console.log('Database seeded successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);
+    process.exit(1); // Exit with error code
   }
 }
 
