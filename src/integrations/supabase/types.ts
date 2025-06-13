@@ -104,15 +104,20 @@ export type Database = {
       patents: {
         Row: {
           artist_id: number
+          category: string
           created_at: string
           description: string
+          filing_date: string
           id: string
+          ip_asset_address: string | null
+          ip_asset_chain: number | null
           ip_id: string | null
           ip_metadata_hash: string
           ip_metadata_uri: string
           license_terms_ids: string[] | null
           nft_metadata_hash: string
           nft_metadata_uri: string
+          patent_number: string
           project_id: number
           status: string
           title: string
@@ -120,15 +125,20 @@ export type Database = {
         }
         Insert: {
           artist_id: number
+          category: string
           created_at?: string
           description: string
+          filing_date: string
           id?: string
+          ip_asset_address?: string | null
+          ip_asset_chain?: number | null
           ip_id?: string | null
           ip_metadata_hash: string
           ip_metadata_uri: string
           license_terms_ids?: string[] | null
           nft_metadata_hash: string
           nft_metadata_uri: string
+          patent_number: string
           project_id: number
           status: string
           title: string
@@ -136,15 +146,20 @@ export type Database = {
         }
         Update: {
           artist_id?: number
+          category?: string
           created_at?: string
           description?: string
+          filing_date?: string
           id?: string
+          ip_asset_address?: string | null
+          ip_asset_chain?: number | null
           ip_id?: string | null
           ip_metadata_hash?: string
           ip_metadata_uri?: string
           license_terms_ids?: string[] | null
           nft_metadata_hash?: string
           nft_metadata_uri?: string
+          patent_number?: string
           project_id?: number
           status?: string
           title?: string

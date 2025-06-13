@@ -9,6 +9,8 @@ import { useAccount } from 'wagmi';
 import { useStoryProtocol } from '@/hooks/useStoryProtocol';
 import { supabase } from '@/integrations/supabase/client';
 import { usePatents } from '@/hooks/usePatents';
+import { uploadJSONToIPFS, getArtistByAddress } from '@/integrations/supabase/patents';
+import { sha256 } from 'js-sha256';
 
 interface RegisterPatentModalProps {
   isOpen: boolean;
@@ -27,7 +29,7 @@ export const RegisterPatentModal = ({ isOpen, onClose, onSubmit }: RegisterPaten
   });
   const [isRegistering, setIsRegistering] = useState(false);
   const { toast } = useToast();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { mintAndRegisterIpAssetWithPilTerms } = useStoryProtocol();
   const { refreshPatents } = usePatents();
 
@@ -99,20 +101,90 @@ export const RegisterPatentModal = ({ isOpen, onClose, onSubmit }: RegisterPaten
     setIsRegistering(true);
 
     try {
+      if (!address) {
+        toast({
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet to register a patent.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const walletAddress: `0x${string}` = address as `0x${string}`;
+      const artist = await getArtistByAddress(walletAddress);
+
+      if (!artist) {
+        toast({
+          title: "Artist Not Registered",
+          description: "Please register as an artist first to create a patent.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 1. Prepare IP Metadata
+      const ipMetadata = {
+        title: formData.title,
+        description: formData.description,
+        createdAt: Math.floor(Date.now() / 1000).toString(),
+        creators: [
+          {
+            name: walletAddress,
+            address: walletAddress,
+            contributionPercent: 100,
+          },
+        ],
+        category: formData.category, // Include category in IP metadata
+        patentNumber: formData.patentNumber,
+        filingDate: formData.filingDate,
+        status: formData.status,
+      };
+
+      // 2. Prepare NFT Metadata (simplified for now)
+      const nftMetadata = {
+        name: formData.title,
+        description: formData.description,
+        image: "https://via.placeholder.com/150", // Placeholder image
+        attributes: [
+          {
+            key: 'Creator',
+            value: walletAddress,
+          },
+          {
+            key: 'Category',
+            value: formData.category,
+          },
+          {
+            key: 'Patent Number',
+            value: formData.patentNumber,
+          },
+          {
+            key: 'Filing Date',
+            value: formData.filingDate,
+          },
+        ],
+      };
+
+      // Upload metadata to IPFS
+      const ipIpfsHash = await uploadJSONToIPFS(ipMetadata);
+      const ipHash = sha256(JSON.stringify(ipMetadata));
+      const nftIpfsHash = await uploadJSONToIPFS(nftMetadata);
+      const nftHash = sha256(JSON.stringify(nftMetadata));
+
       // Step 1: Register IP Asset with Story Protocol
+      // Note: The `metadata` field in `mintAndRegisterIpAssetWithPilTerms` expects a flat object.
+      // We are passing the `ipMetadata` object directly for clarity in this step,
+      // assuming the SDK handles its structure or takes a URI.
       const ipAsset = await mintAndRegisterIpAssetWithPilTerms({
         name: formData.title,
         description: formData.description,
         category: formData.category,
-        metadata: {
-          patentNumber: formData.patentNumber,
-          filingDate: formData.filingDate,
-          status: formData.status,
-        },
+        metadata: ipMetadata, // Pass full ipMetadata object
       });
 
       // Step 2: Create patent in Supabase
       const patentToInsert = {
+        artist_id: artist.id, // Use the fetched artist ID
         title: formData.title.trim(),
         description: formData.description.trim(),
         category: formData.category,
@@ -121,7 +193,13 @@ export const RegisterPatentModal = ({ isOpen, onClose, onSubmit }: RegisterPaten
         status: formData.status,
         ip_asset_id: ipAsset.id,
         ip_asset_address: ipAsset.address,
-        ip_asset_chain: ipAsset.chain,
+        ip_asset_chain: Number(ipAsset.chain),
+        ip_metadata_uri: `https://ipfs.io/ipfs/${ipIpfsHash}`,
+        ip_metadata_hash: `0x${ipHash}`,
+        nft_metadata_uri: `https://ipfs.io/ipfs/${nftIpfsHash}`,
+        nft_metadata_hash: `0x${nftHash}`,
+        created_at: new Date().toISOString(),
+        project_id: null, // Set project_id to null or a default value if not linked to a project
       };
 
       const { data: newPatent, error: patentInsertError } = await supabase

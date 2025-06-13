@@ -24,7 +24,8 @@ const mockArtists = [
     followers: 2400,
     rating: 4.8,
     current_project: "AI-Powered Music Composition",
-    bio: "Creating immersive digital experiences that blend reality with imagination"
+    bio: "Creating immersive digital experiences that blend reality with imagination",
+    wallet_address: "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1"
   },
   {
     name: "Marcus Rodriguez",
@@ -36,7 +37,8 @@ const mockArtists = [
     followers: 5600,
     rating: 4.9,
     current_project: "Digital Art NFT Collection",
-    bio: "Composer pushing boundaries between classical music and AI-generated melodies"
+    bio: "Composer pushing boundaries between classical music and AI-generated melodies",
+    wallet_address: "0x0000000000000000000000000000000000000000"
   },
   {
     name: "Emma Thompson",
@@ -48,7 +50,8 @@ const mockArtists = [
     followers: 890,
     rating: 4.6,
     current_project: "Interactive Storytelling Platform",
-    bio: "Independent filmmaker documenting cultural transformation in urban environments"
+    bio: "Independent filmmaker documenting cultural transformation in urban environments",
+    wallet_address: "0x0000000000000000000000000000000000000000"
   }
 ];
 
@@ -182,41 +185,77 @@ const mockFundingContracts = [
 
 const mockPatents = [
   {
-    artist_id: 1, // This will be set dynamically
-    project_id: 1, // This will be set dynamically
-    title: "AI Music Composition System",
-    description: "A system for generating music based on emotional inputs using machine learning",
-    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample1",
-    ip_metadata_hash: "0x123...",
-    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample2",
-    nft_metadata_hash: "0x456...",
-    status: "pending",
-    created_at: new Date().toISOString()
+    artist_id: 1,
+    title: "AI-Powered Gene Editing System",
+    description: "A novel CRISPR-Cas9 system enhanced with AI for precision gene editing.",
+    category: "Biotechnology",
+    status: "Granted",
+    patent_number: "US1234567A",
+    filing_date: "2022-01-15",
+    ip_asset_id: "0x0000000000000000000000000000000000000001",
+    ip_asset_address: "0x0000000000000000000000000000000000000001",
+    ip_asset_chain: 1,
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmAIgene",
+    ip_metadata_hash: "0x1a2b3c4d",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmAIgenenft",
+    nft_metadata_hash: "0x5e6f7a8b",
+    created_at: new Date().toISOString(),
+    project_id: 1,
   },
   {
-    artist_id: 2, // This will be set dynamically
-    project_id: 2, // This will be set dynamically
-    title: "Digital Art Generation with AR",
-    description: "Method for creating and displaying digital art with augmented reality features",
-    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample3",
-    ip_metadata_hash: "0x789...",
-    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample4",
-    nft_metadata_hash: "0xabc...",
-    status: "registered",
-    created_at: new Date().toISOString()
+    artist_id: 1,
+    title: "Quantum Computing Encryption Algorithm",
+    description: "A post-quantum cryptographic algorithm resistant to quantum attacks.",
+    category: "Technology",
+    status: "Pending",
+    patent_number: "US9876543B",
+    filing_date: "2023-03-20",
+    ip_asset_id: "0x0000000000000000000000000000000000000002",
+    ip_asset_address: "0x0000000000000000000000000000000000000002",
+    ip_asset_chain: 1,
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmQuantum",
+    ip_metadata_hash: "0x9c0d1e2f",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmQuantumnft",
+    nft_metadata_hash: "0x3g4h5i6j",
+    created_at: new Date().toISOString(),
+    project_id: 1,
   },
   {
-    artist_id: 3, // This will be set dynamically
-    project_id: 3, // This will be set dynamically
-    title: "Interactive Story Generation Platform",
-    description: "System for creating branching narrative structures with user interaction",
-    ip_metadata_uri: "https://ipfs.io/ipfs/QmExample5",
-    ip_metadata_hash: "0xdef...",
-    nft_metadata_uri: "https://ipfs.io/ipfs/QmExample6",
-    nft_metadata_hash: "0xghi...",
-    status: "pending",
-    created_at: new Date().toISOString()
-  }
+    artist_id: 2,
+    title: "Bio-Degradable Plastic Production Method",
+    description: "An innovative method for producing plastics that fully degrade within 6 months.",
+    category: "Technology",
+    status: "Rejected",
+    patent_number: "US4567890C",
+    filing_date: "2021-08-01",
+    ip_asset_id: "0x0000000000000000000000000000000000000003",
+    ip_asset_address: "0x0000000000000000000000000000000000000003",
+    ip_asset_chain: 1,
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmBioPlastic",
+    ip_metadata_hash: "0x7k8l9m0n",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmBioPlasticnft",
+    nft_metadata_hash: "0x1o2p3q4r",
+    created_at: new Date().toISOString(),
+    project_id: 2,
+  },
+  {
+    artist_id: 2,
+    title: "Automated Surgical Robotic Arm",
+    description: "A robotic arm capable of performing complex surgical procedures with minimal human intervention.",
+    category: "Medical Device",
+    status: "Granted",
+    patent_number: "US1122334D",
+    filing_date: "2020-05-10",
+    ip_asset_id: "0x0000000000000000000000000000000000000004",
+    ip_asset_address: "0x0000000000000000000000000000000000000004",
+    ip_asset_chain: 1,
+    ip_metadata_uri: "https://ipfs.io/ipfs/QmRoboticArm",
+    ip_metadata_hash: "0x5s6t7u8v",
+    nft_metadata_uri: "https://ipfs.io/ipfs/QmRoboticArmnft",
+    nft_metadata_hash: "0x9w0x1y2z",
+    created_at: new Date().toISOString(),
+    project_id: 2,
+  },
 ];
 
 // Add error handling function
@@ -296,16 +335,20 @@ async function seedDatabase() {
     }
     console.log('Staking pools seeded successfully');
 
-    // Insert patents with project_id and artist_id
-    const patentsWithProjectsAndArtists = mockPatents.map((patent, index) => ({
+    // Insert patents with project_id, artist_id, and other fields
+    const patentsToInsert = mockPatents.map((patent) => ({
       ...patent,
-      project_id: projects[index].id,
-      artist_id: artists[index].id
+      // The artist_id, project_id, ip_metadata_uri, ip_metadata_hash,
+      // nft_metadata_uri, nft_metadata_hash, and created_at fields are now part of mockPatents.
+      // No need to generate them here or set default values.
     }));
 
+    // We are no longer using the `registerPatent` function from `patents.ts` for seeding
+    // as that function handles IP asset registration with Story Protocol and IPFS uploads,
+    // which is not necessary for merely seeding the Supabase table with mock data.
     const { error: patentsError } = await supabase
         .from('patents')
-        .insert(patentsWithProjectsAndArtists);
+        .insert(patentsToInsert);
 
     if (patentsError) {
       await handleSupabaseError('patents insertion', patentsError);
