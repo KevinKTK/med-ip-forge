@@ -31,11 +31,11 @@ const Artists = () => {
   const { artists, isLoading: artistsLoading } = useArtists();
   const { projects, stakingPools, patents: patentsByProject, isLoading: projectsLoading } = useProjects();
 
-  // Convert patent data to expected format - now correctly typed as Patents with string ids
-  const patents: Record<number, Patent> = useMemo(() => {
-    const convertedPatents: Record<number, Patent> = {};
+  // Convert patent data to expected format - correctly typed as Patents with string ids
+  const patents: Record<string, Patent> = useMemo(() => {
+    const convertedPatents: Record<string, Patent> = {};
     Object.entries(patentsByProject).forEach(([projectId, patent]) => {
-      convertedPatents[parseInt(projectId)] = patent;
+      convertedPatents[projectId] = patent;
     });
     return convertedPatents;
   }, [patentsByProject]);
@@ -137,7 +137,7 @@ const Artists = () => {
             {projects.map((project) => {
               const artist = artists.find(a => a.id === project.artist_id);
               const artistName = artist ? artist.name : 'Unknown Artist';
-              const patent = patents[project.id]; // Now correctly using Patent with string id
+              const patent = patents[project.id.toString()]; // Now correctly using Patent with string id
 
               return (
                 <ProjectCard

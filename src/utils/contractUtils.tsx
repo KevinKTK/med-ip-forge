@@ -1,3 +1,4 @@
+
 import Staking from '@/contracts/Staking.json';
 import Funding from '@/contracts/Funding.json';
 import {useState} from 'react';
@@ -149,13 +150,14 @@ export function useStakingPoolDeployer() {
         throw new StakingError(`Project already has a deployed ${contractType} contract`, "CONTRACT_EXISTS");
       }
 
-      // Deploy the contract with account parameter
+      // Deploy the contract with account parameter and kzg property
       const hash = await walletClient.deployContract({
         abi: contractAbi,
         bytecode: contractBytecode,
         args: contractArgs,
         account: address, // Add account parameter
         chain: storyAeneid,
+        kzg: null, // Add required kzg property
       });
 
       // Wait for the transaction to be confirmed
