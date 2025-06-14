@@ -67,6 +67,12 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
         >
           FEATURED ARTISTS
         </Button>
+        <Button
+          onClick={() => onTabChange('myProjects')}
+          className={activeTab === 'myProjects' ? 'pixel-button bg-cyber-green text-black' : 'border-2 border-cyber-green text-cyber-green bg-transparent hover:bg-cyber-green hover:text-black font-retro text-xs'}
+        >
+          MY PROJECTS
+        </Button>
       </div>
     </div>
   );

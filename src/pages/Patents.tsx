@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { PatentsHeader } from '@/components/Patents/PatentsHeader';
@@ -9,12 +10,15 @@ import { StakingHistory } from '@/components/Patents/StakingHistory';
 import { VotingModal } from '@/components/Patents/VotingModal';
 import { RegisterPatentModal } from '@/components/Patents/RegisterPatentModal';
 import { PatentCard } from '@/components/Patents/PatentCard';
+import { MyProjectsView } from '@/components/Artists/MyProjectsView';
+import { CreateProjectModal } from '@/components/Artists/CreateProjectModal';
 
 const Patents = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [selectedProject, setSelectedProject] = useState(null);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isCreatePatentModalOpen, setIsCreatePatentModalOpen] = useState(false);
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
   
   // Filter states for projects
   const [projectFilterStatus, setProjectFilterStatus] = useState<string | null>(null);
@@ -109,6 +113,11 @@ const Patents = () => {
     setIsCreatePatentModalOpen(false);
   };
 
+  const handleCreateProject = async (projectData: any) => {
+    console.log('Project created:', projectData);
+    setIsCreateProjectModalOpen(false);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
@@ -124,6 +133,16 @@ const Patents = () => {
             }`}
           >
             Projects
+          </button>
+          <button
+            onClick={() => setActiveTab('myProjects')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'myProjects'
+                ? 'bg-neon-gradient text-white'
+                : 'text-gray-400 hover:text-white border border-gray-600'
+            }`}
+          >
+            My Projects
           </button>
           <button
             onClick={() => setActiveTab('leaderboard')}
@@ -187,6 +206,10 @@ const Patents = () => {
           </div>
         )}
 
+        {activeTab === 'myProjects' && (
+          <MyProjectsView onCreateProject={() => setIsCreateProjectModalOpen(true)} />
+        )}
+
         {activeTab === 'leaderboard' && <ProjectLeaderboard projects={mockProjects} />}
         {activeTab === 'wallet' && <WalletSelector />}
         {activeTab === 'history' && <StakingHistory />}
@@ -210,6 +233,11 @@ const Patents = () => {
           onSubmit={handleRegisterPatent}
         />
 
+        <CreateProjectModal
+          isOpen={isCreateProjectModalOpen}
+          onClose={() => setIsCreateProjectModalOpen(false)}
+          onSubmit={handleCreateProject}
+        />
       </div>
     </Layout>
   );

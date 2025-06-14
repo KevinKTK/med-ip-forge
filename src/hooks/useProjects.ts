@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,12 +13,17 @@ interface Project {
   staking_apy: number;
   time_remaining: string;
   description: string;
+  detailed_description: string | null;
   risk_level: string;
   milestones: number;
   completed_milestones: number;
   created_at: string;
   staking_pool_id?: number;
   funding_contract_id?: number;
+  images: string[];
+  marketing_materials: any;
+  project_status: string;
+  owner_wallet_address: string | null;
 }
 
 interface StakingPool {
@@ -120,6 +126,9 @@ export function useProjects() {
           ...projectData,
           current_funding: 0,
           completed_milestones: 0,
+          images: projectData.images || [],
+          marketing_materials: projectData.marketing_materials || {},
+          project_status: projectData.project_status || 'draft',
         })
         .select()
         .single();

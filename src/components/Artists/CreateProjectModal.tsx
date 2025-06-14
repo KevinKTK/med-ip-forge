@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from 'wagmi';
 import { useStakingPoolDeployer } from '@/utils/contractUtils';
+import { ImageUpload } from './ImageUpload';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -21,11 +23,14 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
     category: '',
     targetFunding: '',
     description: '',
+    detailedDescription: '',
     riskLevel: 'Medium',
+    images: [] as string[],
+    projectStatus: 'draft',
   });
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { deployContract, isDeploying, error: deployError } = useStakingPoolDeployer();
 
   const [artistOption, setArtistOption] = useState<'new' | 'existing'>('new');
@@ -149,27 +154,27 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
 
         if (createError) throw createError;
         artistId = newArtist.id;
-      } else { // artistOption === 'existing'
+      } else {
         artistId = selectedArtistId!;
       }
 
-      // Step 1: Create project in Supabase
       const projectToInsert = {
         title: formData.title.trim(),
         artist_id: artistId,
         category: formData.category,
         target_funding: parseFloat(formData.targetFunding),
         description: formData.description.trim(),
+        detailed_description: formData.detailedDescription.trim() || null,
         risk_level: formData.riskLevel,
         time_remaining: '30 days',
         milestones: 3,
         current_funding: 0,
         completed_milestones: 0,
         staking_apy: 0,
+        images: formData.images,
+        project_status: formData.projectStatus,
+        owner_wallet_address: address,
       };
-
-      // Ensure 'id' is not present in the payload, even if it shouldn't be
-      delete projectToInsert.id;
 
       console.log('Project data being inserted:', projectToInsert);
 
@@ -184,26 +189,31 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
 
       const projectId = newProject.id;
 
-      // Step 2: Deploy Funding contract
-      const deployedContract = await deployContract({
-        projectId: projectId,
-        contractType: 'funding',
-        maxFunding: parseFloat(formData.targetFunding),
-      });
+      if (formData.projectStatus === 'published') {
+        const deployedContract = await deployContract({
+          projectId: projectId,
+          contractType: 'funding',
+          maxFunding: parseFloat(formData.targetFunding),
+        });
 
-      // Step 3: Call the parent onSubmit function
-      await onSubmit({
-        ...newProject,
-        funding_contract_id: deployedContract.id,
-      });
+        await onSubmit({
+          ...newProject,
+          funding_contract_id: deployedContract.id,
+        });
+      } else {
+        await onSubmit(newProject);
+      }
 
-      // Reset form on success
+      // Reset form
       setFormData({
         title: '',
         category: '',
         targetFunding: '',
         description: '',
+        detailedDescription: '',
         riskLevel: 'Medium',
+        images: [],
+        projectStatus: 'draft',
       });
 
       onClose();
@@ -211,7 +221,6 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
     } catch (error) {
       console.error('Project creation error:', error);
 
-      // Provide specific error messages based on error type
       let errorMessage = "Failed to create project";
 
       if (error instanceof Error) {
@@ -240,25 +249,25 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/10 max-w-md">
+      <DialogContent className="glass-card border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="gradient-text text-xl">Create New Project</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-          <div>
+            <div>
               <Label htmlFor="title">Project Title</Label>
               <Input
                 id="title"
-              value={formData.title}
+                value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter project title"
                 required
-            />
-          </div>
+              />
+            </div>
 
-          <div>
+            <div>
               <Label htmlFor="artist-option">Artist</Label>
               <div className="flex space-x-4">
                 <Button
@@ -301,7 +310,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
                   </SelectContent>
                 </Select>
               )}
-          </div>
+            </div>
 
             <div>
               <Label htmlFor="category">Category</Label>
@@ -332,18 +341,34 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
                 step="0.01"
                 required
               />
-          </div>
+            </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Short Description</Label>
               <Input
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your project"
+                placeholder="Brief project description"
                 required
               />
             </div>
+
+            <div>
+              <Label htmlFor="detailedDescription">Detailed Description</Label>
+              <Textarea
+                id="detailedDescription"
+                value={formData.detailedDescription}
+                onChange={(e) => setFormData({ ...formData, detailedDescription: e.target.value })}
+                placeholder="Detailed project description for marketing..."
+                rows={4}
+              />
+            </div>
+
+            <ImageUpload
+              images={formData.images}
+              onChange={(images) => setFormData({ ...formData, images })}
+            />
 
             <div>
               <Label htmlFor="riskLevel">Risk Level</Label>
@@ -360,15 +385,42 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
                   <SelectItem value="High">High</SelectItem>
                 </SelectContent>
               </Select>
-          </div>
+            </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-neon-gradient hover:opacity-90"
-              disabled={isCreating || isDeploying}
-            >
-              {isCreating || isDeploying ? 'Creating Project...' : 'Create Project'}
-            </Button>
+            <div>
+              <Label htmlFor="projectStatus">Project Status</Label>
+              <Select
+                value={formData.projectStatus}
+                onValueChange={(value) => setFormData({ ...formData, projectStatus: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Save as Draft</SelectItem>
+                  <SelectItem value="published">Publish Project</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-neon-gradient hover:opacity-90"
+                disabled={isCreating || isDeploying}
+              >
+                {isCreating || isDeploying ? 'Creating Project...' : 
+                 formData.projectStatus === 'published' ? 'Create & Publish' : 'Save Draft'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
