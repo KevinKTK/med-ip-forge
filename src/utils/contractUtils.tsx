@@ -154,8 +154,6 @@ export function useStakingPoolDeployer() {
         abi: contractAbi,
         bytecode: contractBytecode,
         args: contractArgs,
-        account: walletClient.account,
-        chain: storyAeneid,
       });
 
       // Wait for the transaction to be confirmed

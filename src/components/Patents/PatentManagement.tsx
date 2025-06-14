@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { getStoryClient } from '@/contexts/StoryKit'
@@ -43,7 +42,7 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
   const loadPatents = async () => {
     try {
       if (!address) return;
-      const walletAddress: `0x${string}` = address as `0x${string}`;
+      const walletAddress = address as `0x${string}`;
       const artist = await getArtistByAddress(walletAddress);
       if (!artist) {
         setError("Artist not registered. Please register as an artist first.");
@@ -64,7 +63,7 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
     try {
       if (!address) throw new Error('No wallet connected')
 
-      const walletAddress: `0x${string}` = address as `0x${string}`;
+      const walletAddress = address as `0x${string}`;
       const artist = await getArtistByAddress(walletAddress);
 
       if (!artist) {
@@ -131,9 +130,9 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
         ],
         ipMetadata: {
           ipMetadataURI: patent.ip_metadata_uri,
-          ipMetadataHash: patent.ip_metadata_hash,
+          ipMetadataHash: patent.ip_metadata_hash as `0x${string}`,
           nftMetadataURI: patent.nft_metadata_uri,
-          nftMetadataHash: patent.nft_metadata_hash,
+          nftMetadataHash: patent.nft_metadata_hash as `0x${string}`,
         },
       })
 

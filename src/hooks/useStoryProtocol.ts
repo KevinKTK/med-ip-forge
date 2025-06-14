@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
 import { useStoryClient } from '@/hooks/useStoryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useAccount } from 'wagmi';
 import { StoryClient, StoryConfig, LicenseTerms } from '@story-protocol/core-sdk';
 import { storyAeneid } from 'wagmi/chains';
 import { zeroAddress, toHex } from 'viem';
@@ -23,7 +25,8 @@ interface RegisteredIpAsset {
 }
 
 export const useStoryProtocol = () => {
-  const { storyClient, address: walletAddress, error: clientError } = useStoryClient();
+  const { storyClient, isLoading: clientLoading, error: clientError } = useStoryClient();
+  const { address } = useAccount();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +84,7 @@ export const useStoryProtocol = () => {
       const nftMetadataHash = toHex("test-nft-metadata-hash", { size: 32 });
 
       // Use the connected wallet address as recipient if available
-      const recipient = walletAddress || "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1";
+      const recipient = address || "0x0b1e46e42c49f450aF30769C4BC2a3CF0425A8c1";
 
       // Call the Story Protocol SDK to mint and register the IP asset with the commercial remix terms
       const response = await storyClient.ipAsset.mintAndRegisterIpAssetWithPilTerms({
