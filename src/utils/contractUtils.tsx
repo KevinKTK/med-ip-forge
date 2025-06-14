@@ -1,8 +1,7 @@
-
 import Staking from '@/contracts/Staking.json';
 import Funding from '@/contracts/Funding.json';
 import {useState} from 'react';
-import { useWalletClient, usePublicClient } from 'wagmi';
+import { useWalletClient, usePublicClient, useAccount } from 'wagmi';
 import { ContractFunctionExecutionError} from 'viem';
 import { supabase } from '@/integrations/supabase/client';
 import { storyAeneid } from 'wagmi/chains';
@@ -18,6 +17,7 @@ export class StakingError extends Error {
 export function useStakingPoolDeployer() {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
+  const { address } = useAccount(); // Get account address
 
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function useStakingPoolDeployer() {
   const deployContract = async (params: DeployParams) => {
     const { projectId, contractType, maxFunding, apy, poolName, lockupPeriods, totalPoolSize } = params;
 
-    if (!walletClient || !walletClient.account) {
+    if (!walletClient || !walletClient.account || !address) {
       throw new StakingError("Wallet not connected", "WALLET_NOT_CONNECTED");
     }
 
@@ -149,11 +149,12 @@ export function useStakingPoolDeployer() {
         throw new StakingError(`Project already has a deployed ${contractType} contract`, "CONTRACT_EXISTS");
       }
 
-      // Deploy the contract
+      // Deploy the contract with account parameter
       const hash = await walletClient.deployContract({
         abi: contractAbi,
         bytecode: contractBytecode,
         args: contractArgs,
+        account: address, // Add account parameter
         chain: storyAeneid,
       });
 

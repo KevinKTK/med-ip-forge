@@ -13,7 +13,7 @@ import { Tables } from '@/integrations/supabase/types';
 
 type Artist = Tables<'artists'>;
 type Project = Tables<'projects'>;
-type Patent = Tables<'patents'>;
+type Patent = Tables<'patents'>; // Use Supabase type which has string id
 
 const Artists = () => {
   const [activeTab, setActiveTab] = useState('projects');
@@ -31,7 +31,7 @@ const Artists = () => {
   const { artists, isLoading: artistsLoading } = useArtists();
   const { projects, stakingPools, patents: patentsByProject, isLoading: projectsLoading } = useProjects();
 
-  // Convert patent data to expected format
+  // Convert patent data to expected format - now correctly typed as Patents with string ids
   const patents: Record<number, Patent> = useMemo(() => {
     const convertedPatents: Record<number, Patent> = {};
     Object.entries(patentsByProject).forEach(([projectId, patent]) => {
@@ -84,6 +84,10 @@ const Artists = () => {
     }));
   }, [sortedArtists]);
 
+  const handleCreateProject = () => {
+    setShowCreateProject(true);
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -100,7 +104,7 @@ const Artists = () => {
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
         <ArtistHeader 
-          onCreateProject={() => setShowCreateProject(true)}
+          onCreateProject={handleCreateProject}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -133,7 +137,7 @@ const Artists = () => {
             {projects.map((project) => {
               const artist = artists.find(a => a.id === project.artist_id);
               const artistName = artist ? artist.name : 'Unknown Artist';
-              const patent = patents[project.id];
+              const patent = patents[project.id]; // Now correctly using Patent with string id
 
               return (
                 <ProjectCard
@@ -148,12 +152,16 @@ const Artists = () => {
         )}
 
         {activeTab === 'myProjects' && (
-          <MyProjectsView />
+          <MyProjectsView onCreateProject={handleCreateProject} />
         )}
 
         <CreateProjectModal
-          open={showCreateProject}
-          onOpenChange={setShowCreateProject}
+          isOpen={showCreateProject}
+          onClose={() => setShowCreateProject(false)}
+          onSubmit={async (projectData) => {
+            console.log('Project created:', projectData);
+            setShowCreateProject(false);
+          }}
         />
       </div>
     </Layout>
