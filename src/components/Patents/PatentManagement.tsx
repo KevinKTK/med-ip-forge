@@ -4,8 +4,11 @@ import { getStoryClient } from '@/contexts/StoryKit'
 import { registerPatent, updatePatentWithIPId, updatePatentWithLicenseTerms, getPatentsByArtist, getArtistByAddress } from '@/integrations/supabase/patents'
 import { createCommercialRemixTerms } from '@/utils/licensing'
 import { SPGNFTContractAddress } from '@/utils/config'
-import type { Patent } from '@/integrations/supabase/types'
+import { Database } from '@/integrations/supabase/types'
 import { Button } from '@/components/ui/button'
+import { PatentCard } from './PatentCard'
+
+type Patent = Database['public']['Tables']['patents']['Row']
 
 interface PatentManagementProps {
   isModalOpen: boolean;
@@ -101,12 +104,11 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
 
       // 3. Register patent in Supabase
       const patent = await registerPatent(
-        artist.id, // Use the numerical artist ID
+        artist.id,
         formData.title,
         formData.description,
         ipMetadata,
         nftMetadata
-        // projectId is optional, will be null if not provided
       )
 
       // 4. Get Story Protocol client
@@ -147,7 +149,7 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
         mediaType: '',
       })
       setIsModalOpen(false)
-    } catch (err: any) { // Catch as any to safely access message
+    } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
@@ -313,43 +315,22 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
         </div>
       )}
 
-      {/* Patents List Section - Always visible */}
-      <div className="bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Your Registered Patents</h3>
-          <div className="mt-5">
-            {patents.length === 0 ? (
-              <p className="text-sm text-gray-500">No patents registered yet.</p>
-            ) : (
-              <ul className="divide-y divide-gray-200">
-                {patents.map((patent) => (
-                  <li key={patent.id} className="py-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{patent.title}</p>
-                        <p className="text-sm text-gray-500 truncate">{patent.description}</p>
-                        <p className="text-sm text-gray-500">
-                          Status: <span className="capitalize">{patent.status}</span>
-                        </p>
-                        {patent.ip_id && (
-                          <p className="text-sm text-gray-500">
-                            IP ID: {patent.ip_id}
-                          </p>
-                        )}
-                        {patent.project_id && (
-                          <p className="text-sm text-gray-500">
-                            Project ID: {patent.project_id}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+      {/* Patents Cards Section */}
+      <div className="space-y-6">
+        <h3 className="text-2xl font-retro neon-text">Your Registered Patents</h3>
+        {patents.length === 0 ? (
+          <div className="pixel-card pixel-outline p-8 text-center">
+            <p className="text-cyber-green/70 font-pixel">No patents registered yet.</p>
+            <p className="text-cyber-green/50 font-pixel text-sm mt-2">Click "Create New Patent" to get started.</p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {patents.map((patent) => (
+              <PatentCard key={patent.id} patent={patent} />
+            ))}
+          </div>
+        )}
       </div>
     </>
   )
-} 
+}

@@ -1,219 +1,162 @@
-import Staking from '@/contracts/Staking.json';
-import Funding from '@/contracts/Funding.json';
-import {useState} from 'react';
-import { useWalletClient, usePublicClient } from 'wagmi';
-import { ContractFunctionExecutionError} from 'viem';
-import { supabase } from '@/integrations/supabase/client';
-import { storyAeneid } from 'wagmi/chains';
-import { parseEther } from 'viem';
 
-export class StakingError extends Error {
-  constructor(message: string, public code: string) {
-    super(message);
-    this.name = 'StakingError';
+import { createPublicClient, http, createWalletClient, custom } from 'viem';
+import { storyTestnet } from '@story-protocol/core-sdk';
+import FundingABI from '@/contracts/Funding.json';
+import StakingABI from '@/contracts/Staking.json';
+
+const publicClient = createPublicClient({
+  chain: storyTestnet,
+  transport: http(),
+});
+
+const getFundingBytecode = () => {
+  const bytecodeData = FundingABI.bytecode;
+  if (typeof bytecodeData === 'string') {
+    return bytecodeData.startsWith('0x') ? bytecodeData as `0x${string}` : `0x${bytecodeData}` as `0x${string}`;
+  } else if (bytecodeData && typeof bytecodeData.object === 'string') {
+    return bytecodeData.object.startsWith('0x') ? bytecodeData.object as `0x${string}` : `0x${bytecodeData.object}` as `0x${string}`;
   }
-}
+  throw new Error('Invalid bytecode format for Funding contract');
+};
 
-export function useStakingPoolDeployer() {
-  const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  interface DeployParams {
-    projectId: number;
-    contractType: 'funding' | 'staking';
-    maxFunding?: number; // For Funding contract
-    apy?: number; // For Staking contract
-    poolName?: string; // For Staking contract
-    lockupPeriods?: number[]; // For Staking contract
-    totalPoolSize?: number; // For Staking contract
+const getStakingBytecode = () => {
+  const bytecodeData = StakingABI.bytecode;
+  if (typeof bytecodeData === 'string') {
+    return bytecodeData.startsWith('0x') ? bytecodeData as `0x${string}` : `0x${bytecodeData}` as `0x${string}`;
+  } else if (bytecodeData && typeof bytecodeData.object === 'string') {
+    return bytecodeData.object.startsWith('0x') ? bytecodeData.object as `0x${string}` : `0x${bytecodeData.object}` as `0x${string}`;
   }
+  throw new Error('Invalid bytecode format for Staking contract');
+};
 
-  const deployContract = async (params: DeployParams) => {
-    const { projectId, contractType, maxFunding, apy, poolName, lockupPeriods, totalPoolSize } = params;
+export const deployFundingContract = async (
+  walletClient: any,
+  maxFunding: bigint,
+  account: any
+) => {
+  try {
+    console.log('Deploying funding contract with params:', {
+      maxFunding: maxFunding.toString(),
+      account: account.address
+    });
 
-    if (!walletClient) {
-      throw new StakingError("Wallet not connected", "WALLET_NOT_CONNECTED");
-    }
+    const hash = await walletClient.deployContract({
+      abi: FundingABI.abi,
+      bytecode: getFundingBytecode(),
+      args: [maxFunding],
+      account: account,
+      chain: storyTestnet,
+      type: 'eip1559',
+    } as any);
 
-    setIsDeploying(true);
-    setError(null);
+    console.log('Funding contract deployment hash:', hash);
 
-    try {
-      // Fetch project details to get the project name and artist_id, and target_funding
-      const { data: projectData, error: projectError } = await supabase
-        .from('projects')
-        .select('title, artist_id, target_funding')
-        .eq('id', projectId)
-        .single();
+    const receipt = await publicClient.waitForTransactionReceipt({ 
+      hash,
+      confirmations: 1
+    });
 
-      if (projectError) {
-        throw new StakingError(`Failed to fetch project details: ${projectError.message}`, "PROJECT_FETCH_ERROR");
-      }
-      if (!projectData) {
-        throw new StakingError("Project not found", "PROJECT_NOT_FOUND");
-      }
+    console.log('Funding contract deployed at:', receipt.contractAddress);
+    return {
+      address: receipt.contractAddress,
+      transactionHash: hash
+    };
+  } catch (error) {
+    console.error('Error deploying funding contract:', error);
+    throw error;
+  }
+};
 
-      const projectName = projectData.title;
+export const deployStakingContract = async (
+  walletClient: any,
+  projectId: bigint,
+  stakingToken: `0x${string}`,
+  rewardToken: `0x${string}`,
+  rewardRate: bigint,
+  account: any
+) => {
+  try {
+    console.log('Deploying staking contract with params:', {
+      projectId: projectId.toString(),
+      stakingToken,
+      rewardToken,
+      rewardRate: rewardRate.toString(),
+      account: account.address
+    });
 
-      // Fetch artist details to get the artist name
-      const { data: artistData, error: artistError } = await supabase
-        .from('artists')
-        .select('name')
-        .eq('id', projectData.artist_id)
-        .single();
+    const hash = await walletClient.deployContract({
+      abi: StakingABI.abi,
+      bytecode: getStakingBytecode(),
+      args: [projectId, stakingToken, rewardToken, rewardRate],
+      account: account,
+      chain: storyTestnet,
+      type: 'eip1559',
+    } as any);
 
-      if (artistError) {
-        throw new StakingError(`Failed to fetch artist details: ${artistError.message}`, "ARTIST_FETCH_ERROR");
-      }
-      if (!artistData) {
-        throw new StakingError("Artist not found", "ARTIST_NOT_FOUND");
-      }
+    console.log('Staking contract deployment hash:', hash);
 
-      const artistName = artistData.name;
+    const receipt = await publicClient.waitForTransactionReceipt({ 
+      hash,
+      confirmations: 1
+    });
 
-      let contractAbi: any;
-      let contractBytecode: `0x${string}`;
-      let contractArgs: any[];
-      let tableName: 'funding_contracts' | 'staking_pools';
-      let insertData: any;
-      let projectUpdateColumn: 'funding_contract_id' | 'staking_pool_id';
+    console.log('Staking contract deployed at:', receipt.contractAddress);
+    return {
+      address: receipt.contractAddress,
+      transactionHash: hash
+    };
+  } catch (error) {
+    console.error('Error deploying staking contract:', error);
+    throw error;
+  }
+};
 
-      if (contractType === 'funding') {
-        if (maxFunding === undefined) {
-          throw new StakingError("maxFunding is required for funding contracts", "INVALID_ARGS");
-        }
-        contractAbi = Funding.abi as any;
-        contractBytecode = Funding.bytecode.object as `0x${string}`;
-        contractArgs = [parseEther(maxFunding.toString())];
-        tableName = 'funding_contracts';
-        insertData = {
-          project_id: projectId,
-          contract_address: '',
-          deployer_address: walletClient.account.address,
-          deployment_date: new Date().toISOString(),
-          max_funding: maxFunding,
-        };
-        projectUpdateColumn = 'funding_contract_id';
-      } else if (contractType === 'staking') {
-        if (apy === undefined || poolName === undefined || lockupPeriods === undefined || totalPoolSize === undefined) {
-          throw new StakingError("apy, poolName, lockupPeriods, and totalPoolSize are required for staking contracts", "INVALID_ARGS");
-        }
-        // Validate inputs for staking contract
-        if (apy <= 0 || apy > 100) {
-          throw new StakingError("Invalid APY value", "INVALID_APY");
-        }
+export const getFundingContractDetails = async (contractAddress: `0x${string}`) => {
+  try {
+    const [maxFunding, currentFunding] = await Promise.all([
+      publicClient.readContract({
+        address: contractAddress,
+        abi: FundingABI.abi,
+        functionName: 'maxFunding',
+      }),
+      publicClient.readContract({
+        address: contractAddress,
+        abi: FundingABI.abi,
+        functionName: 'currentFunding',
+      }),
+    ]);
 
-        if (!lockupPeriods.length) {
-          throw new StakingError("Lockup periods are required", "INVALID_LOCKUP_PERIODS");
-        }
+    return {
+      maxFunding,
+      currentFunding,
+    };
+  } catch (error) {
+    console.error('Error reading funding contract:', error);
+    throw error;
+  }
+};
 
-        contractAbi = Staking.abi as any;
-        contractBytecode = Staking.bytecode.object as `0x${string}`;
-        contractArgs = [apy, poolName, BigInt(totalPoolSize)];
-        tableName = 'staking_pools';
-        insertData = {
-          project_id: projectId,
-          contract_address: '',
-          deployer_address: walletClient.account.address,
-          deployment_date: new Date().toISOString(),
-          apy,
-          lockup_periods: lockupPeriods,
-          total_staked: 0,
-          total_stakers: 0,
-          is_active: true,
-          name: poolName,
-          description: `Staking pool for ${projectName} by ${artistName}`,
-          risk_level: 'Medium',
-          asset_type: 'IP',
-          current_completion: 0,
-          total_pool_size: totalPoolSize,
-          available_capacity: totalPoolSize,
-        };
-        projectUpdateColumn = 'staking_pool_id';
-      } else {
-        throw new StakingError("Invalid contract type specified", "INVALID_CONTRACT_TYPE");
-      }
+export const getStakingContractDetails = async (contractAddress: `0x${string}`) => {
+  try {
+    const [totalStaked, rewardRate] = await Promise.all([
+      publicClient.readContract({
+        address: contractAddress,
+        abi: StakingABI.abi,
+        functionName: 'totalStaked',
+      }),
+      publicClient.readContract({
+        address: contractAddress,
+        abi: StakingABI.abi,
+        functionName: 'rewardRate',
+      }),
+    ]);
 
-      // Check if project already has a deployed contract of this type
-      const { data: existingContract } = await supabase
-        .from(tableName)
-        .select('*')
-        .eq('project_id', projectId)
-        .single();
-
-      if (existingContract) {
-        throw new StakingError(`Project already has a deployed ${contractType} contract`, "CONTRACT_EXISTS");
-      }
-
-      // Deploy the contract
-      const hash = await walletClient.deployContract({
-        abi: contractAbi,
-        bytecode: contractBytecode,
-        args: contractArgs,
-        type: 'eip1559',
-        chain: storyAeneid,
-      });
-
-      // Wait for the transaction to be confirmed
-      const receipt = await publicClient!.waitForTransactionReceipt({ hash });
-
-      if (!receipt.contractAddress) {
-        throw new StakingError("Deployment failed: contract address not found", "DEPLOYMENT_FAILED");
-      }
-
-      // Update insertData with the deployed contract address
-      insertData.contract_address = receipt.contractAddress;
-
-      // Store the deployed contract information in Supabase
-      const { data: newContractRecord, error: dbError } = await supabase
-        .from(tableName)
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (dbError) {
-        throw new StakingError(`Database error: ${dbError.message}`, "DB_ERROR");
-      }
-
-      // Update the project with the new contract ID
-      const { error: projectUpdateError } = await supabase
-        .from('projects')
-        .update({ [projectUpdateColumn]: newContractRecord.id })
-        .eq('id', projectId);
-
-      if (projectUpdateError) {
-        throw new StakingError(`Database error updating project: ${projectUpdateError.message}`, "PROJECT_UPDATE_ERROR");
-      }
-
-      return newContractRecord;
-
-    } catch (err) {
-      if (err instanceof StakingError) {
-        setError(err.message);
-        throw err;
-      } else if (err instanceof ContractFunctionExecutionError) {
-        const error = new StakingError(`Contract Error: ${err.shortMessage}`, "CONTRACT_ERROR");
-        setError(error.message);
-        throw error;
-      } else {
-        const error = new StakingError(
-          err instanceof Error ? err.message : "An unknown error occurred",
-          "UNKNOWN_ERROR"
-        );
-        setError(error.message);
-        throw error;
-      }
-    } finally {
-      setIsDeploying(false);
-    }
-  };
-
-  return {
-    deployContract,
-    isDeploying,
-    error,
-  };
-}
+    return {
+      totalStaked,
+      rewardRate,
+    };
+  } catch (error) {
+    console.error('Error reading staking contract:', error);
+    throw error;
+  }
+};

@@ -1,8 +1,11 @@
+
 import { supabase } from './client'
-import { Patent } from './types'
+import { Database } from './types'
 import { sha256 } from 'js-sha256'
 import axios from 'axios'
 import { Address, zeroAddress } from 'viem'
+
+type Patent = Database['public']['Tables']['patents']['Row']
 
 // Helper to get artist by wallet address
 export async function getArtistByAddress(walletAddress: `0x${string}`) {
@@ -73,18 +76,17 @@ export async function registerPatent(
   artistId: number,
   title: string,
   description: string,
-  category: string,
-  filingDate: string,
-  patentNumber: string,
   ipMetadata: any,
   nftMetadata: any,
-  projectId: number | null = null // Add optional projectId
+  projectId: number | null = null
 ): Promise<Patent> {
   // Upload metadata to IPFS
   const ipIpfsHash = await uploadJSONToIPFS(ipMetadata)
   const ipHash = sha256(JSON.stringify(ipMetadata))
   const nftIpfsHash = await uploadJSONToIPFS(nftMetadata)
   const nftHash = sha256(JSON.stringify(nftMetadata))
+
+  const currentDate = new Date().toISOString()
 
   // Create patent record in Supabase
   const { data, error } = await supabase
@@ -93,15 +95,14 @@ export async function registerPatent(
       artist_id: artistId,
       title,
       description,
-      category,
-      filing_date: filingDate,
-      patent_number: patentNumber,
+      category: 'AI & Art', // Default category
+      filing_date: currentDate,
       ip_metadata_uri: `https://ipfs.io/ipfs/${ipIpfsHash}`,
       ip_metadata_hash: `0x${ipHash}`,
       nft_metadata_uri: `https://ipfs.io/ipfs/${nftIpfsHash}`,
       nft_metadata_hash: `0x${nftHash}`,
       status: 'pending',
-      created_at: new Date().toISOString(),
+      created_at: currentDate,
       project_id: projectId
     })
     .select()
