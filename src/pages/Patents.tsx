@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { PatentsHeader } from '@/components/Patents/PatentsHeader';
@@ -114,16 +115,6 @@ const Patents = () => {
           >
             History
           </button>
-          <button
-            onClick={() => setActiveTab('patents')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'patents'
-                ? 'bg-neon-gradient text-white'
-                : 'text-gray-400 hover:text-white border border-gray-600'
-            }`}
-          >
-            My Patents
-          </button>
         </div>
 
         {activeTab === 'projects' && (
@@ -138,18 +129,20 @@ const Patents = () => {
                 />
               ))}
             </div>
+            
+            {/* My Patents section moved here */}
+            <div className="mt-8">
+              <PatentManagement
+                isModalOpen={false}
+                setIsModalOpen={() => {}}
+              />
+            </div>
           </div>
         )}
 
         {activeTab === 'leaderboard' && <ProjectLeaderboard projects={mockProjects} />}
         {activeTab === 'wallet' && <WalletSelector />}
         {activeTab === 'history' && <StakingHistory />}
-        {activeTab === 'patents' && (
-          <PatentManagement
-            isModalOpen={false}
-            setIsModalOpen={() => {}}
-          />
-        )}
 
         <VotingModal
           isOpen={isVotingModalOpen}
