@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { PatentsHeader } from '@/components/Patents/PatentsHeader';
 import { ProjectFilters } from '@/components/Patents/ProjectFilters';
@@ -7,8 +7,8 @@ import { ProjectLeaderboard } from '@/components/Patents/ProjectLeaderboard';
 import { WalletSelector } from '@/components/Patents/WalletSelector';
 import { StakingHistory } from '@/components/Patents/StakingHistory';
 import { VotingModal } from '@/components/Patents/VotingModal';
-import PatentManagement from '@/components/Patents/PatentManagement';
 import { RegisterPatentModal } from '@/components/Patents/RegisterPatentModal';
+import { PatentCard } from '@/components/Patents/PatentCard';
 
 const Patents = () => {
   const [activeTab, setActiveTab] = useState('projects');
@@ -16,6 +16,10 @@ const Patents = () => {
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isCreatePatentModalOpen, setIsCreatePatentModalOpen] = useState(false);
   
+  // Filter states for projects
+  const [projectFilterStatus, setProjectFilterStatus] = useState<string | null>(null);
+  const [projectSearchQuery, setProjectSearchQuery] = useState<string>('');
+
   const mockProjects = [
     {
       id: 1,
@@ -55,6 +59,43 @@ const Patents = () => {
       category: 'Digital Art',
       votes: 3450,
       description: 'Living digital art forms that evolve based on environmental data'
+    }
+  ];
+
+  // Filtered projects based on status and search query
+  const filteredProjects = useMemo(() => {
+    return mockProjects.filter(project => {
+      const matchesStatus = projectFilterStatus ? project.status === projectFilterStatus : true;
+      const matchesSearch = project.name.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
+                            project.description.toLowerCase().includes(projectSearchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [mockProjects, projectFilterStatus, projectSearchQuery]);
+
+  const mockPatents = [
+    {
+      title: "AI-Powered Gene Editing System",
+      status: "Granted",
+      patent_number: "US1234567A",
+      filing_date: "2022-01-15",
+      category: "Biotechnology",
+      description: "A novel CRISPR-Cas9 system enhanced with AI for precision gene editing."
+    },
+    {
+      title: "Decentralized Identity Verification",
+      status: "Pending",
+      patent_number: "US9876543B",
+      filing_date: "2023-03-20",
+      category: "Blockchain",
+      description: "A blockchain-based system for secure and private identity verification."
+    },
+    {
+      title: "Quantum Cryptography Algorithm",
+      status: "Filed",
+      patent_number: "US4567890C",
+      filing_date: "2024-06-01",
+      category: "Quantum Computing",
+      description: "A new algorithm leveraging quantum mechanics for unbreakable encryption."
     }
   ];
 
@@ -128,9 +169,14 @@ const Patents = () => {
 
         {activeTab === 'projects' && (
           <div className="space-y-6">
-            <ProjectFilters />
+            <ProjectFilters 
+              onSelectStatus={setProjectFilterStatus}
+              onSearch={setProjectSearchQuery}
+              currentStatus={projectFilterStatus}
+              currentSearchQuery={projectSearchQuery}
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockProjects.map((project) => (
+              {filteredProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
@@ -145,10 +191,11 @@ const Patents = () => {
         {activeTab === 'wallet' && <WalletSelector />}
         {activeTab === 'history' && <StakingHistory />}
         {activeTab === 'patents' && (
-          <PatentManagement
-            isModalOpen={false}
-            setIsModalOpen={() => {}}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {mockPatents.map((patent, index) => (
+              <PatentCard key={index} {...patent} />
+            ))}
+          </div>
         )}
 
         <VotingModal

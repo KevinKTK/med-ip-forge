@@ -223,7 +223,7 @@
   }
   
   .pixel-input {
-    @apply bg-black/60 rounded-none text-cyber-purple font-pixel placeholder-cyber-purple/50 focus:shadow-neon focus:outline-none relative backdrop-blur-sm;
+    @apply bg-black/60 rounded-none font-pixel placeholder-cyber-purple/50 focus:shadow-neon focus:outline-none relative backdrop-blur-sm;
     border: 2px solid transparent;
     background-clip: padding-box;
     image-rendering: pixelated;
