@@ -1,42 +1,36 @@
-
 import { useState, useEffect } from 'react';
-import { StoryClient } from '@story-protocol/core-sdk';
-import { useAccount } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 import { getStoryClient } from '@/contexts/StoryKit';
+import { StoryClient } from '@story-protocol/core-sdk';
 
-export const useStoryClient = () => {
-  const [storyClient, setStoryClient] = useState<StoryClient | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+export function useStoryClient() {
   const { address, isConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const [storyClient, setStoryClient] = useState<StoryClient | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeClient = async () => {
-      if (!isConnected || !address) {
-        setStoryClient(null);
-        return;
-      }
-
       setIsLoading(true);
-      setError('');
-
-      try {
-        const client = await getStoryClient(address);
-        setStoryClient(client);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to initialize Story client');
-        console.error('Error initializing Story client:', err);
-      } finally {
-        setIsLoading(false);
+      setError(null);
+      if (isConnected && walletClient && walletClient.account) {
+        try {
+          const client = await getStoryClient(walletClient.account);
+          setStoryClient(client);
+        } catch (err) {
+          console.error("Error initializing StoryClient:", err);
+          setError(err instanceof Error ? err.message : "Failed to initialize Story Protocol client.");
+        }
+      } else {
+        setStoryClient(null);
+        setError("Wallet not connected or account not available for Story Protocol.");
       }
+      setIsLoading(false);
     };
 
     initializeClient();
-  }, [address, isConnected]);
+  }, [isConnected, walletClient]);
 
-  return {
-    storyClient,
-    isLoading,
-    error,
-  };
-};
+  return { storyClient, isLoading, error };
+} 

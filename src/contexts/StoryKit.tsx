@@ -1,31 +1,48 @@
+import { http } from "viem";
+import { Account } from "viem/accounts";
+import { StoryClient, StoryConfig, SupportedChainIds } from "@story-protocol/core-sdk";
+import { storyAeneid } from "wagmi/chains";
+import { supabase } from "@/integrations/supabase/client";
 
-import { StoryClient, Account } from '@story-protocol/core-sdk';
-
-const RPC_PROVIDER_URL = 'https://testnet.storyrpc.io';
-
-export const getStoryClient = async (walletAddress: `0x${string}`): Promise<StoryClient> => {
+const getApiKeys = async () => {
   try {
-    if (!walletAddress) {
-      throw new Error('Wallet address is required');
+    const { data, error } = await supabase.functions.invoke('get-api-keys');
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Failed to get API keys from Supabase:', error);
+    return null;
+  }
+};
+
+// Export a function that returns the client after configuration, accepting the account
+export const getStoryClient = async (account: `0x${string}`) => {
+  const { transport, chainId } = await getStoryRpcConfig();
+  const config: StoryConfig = {
+    account: account as Account,
+    transport: transport,
+    chainId: chainId
+  };
+  return StoryClient.newClient(config);
+};
+
+// Function to get Story Protocol RPC configuration
+const getStoryRpcConfig = async (): Promise<{ transport: StoryConfig['transport'], chainId: SupportedChainIds }> => {
+  try {
+    const apiKeys = await getApiKeys();
+
+    if (!apiKeys) {
+      throw new Error('Failed to fetch API keys from Supabase.');
     }
 
-    // Create a simple account object
-    const account: Account = {
-      address: walletAddress,
-      // Add other required properties if needed
-    } as any;
-
-    const client = StoryClient.newClient({
-      account: account,
-      transport: {
-        rpcUrl: RPC_PROVIDER_URL,
-      },
-      chainId: 'testnet',
-    });
-
-    return client;
+    return {
+      transport: http(apiKeys.RPC_PROVIDER_URL),
+      chainId: storyAeneid.id as SupportedChainIds
+    };
   } catch (error) {
-    console.error('Error creating Story client:', error);
-    throw error;
+    console.error('Failed to get Story RPC config from Supabase secrets:', error);
+    throw new Error('Story Protocol RPC configuration failed');
   }
 };

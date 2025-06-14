@@ -1,11 +1,21 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAccount } from 'wagmi';
-import { Database } from '@/integrations/supabase/types';
 
-type Patent = Database['public']['Tables']['patents']['Row']
+interface Patent {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  patent_number: string;
+  filing_date: string;
+  status: 'Pending' | 'Granted' | 'Expired';
+  ip_asset_id?: string;
+  ip_asset_address?: string;
+  ip_asset_chain?: string;
+  created_at: string;
+}
 
 export const usePatents = () => {
   const [patents, setPatents] = useState<Patent[]>([]);
@@ -48,4 +58,4 @@ export const usePatents = () => {
     isLoading,
     refreshPatents,
   };
-};
+}; 
