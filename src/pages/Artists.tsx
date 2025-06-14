@@ -1,18 +1,32 @@
+
 import { useState, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { ArtistHeader } from '@/components/Artists/ArtistHeader';
 import { ArtistCard } from '@/components/Artists/ArtistCard';
 import { ArtistFilters } from '@/components/Artists/ArtistFilters';
 import { ProjectCard } from '@/components/Artists/ProjectCard';
+import { MyProjectsView } from '@/components/Artists/MyProjectsView';
+import { CreateProjectModal } from '@/components/Artists/CreateProjectModal';
 import { useArtists } from '@/hooks/useArtists';
 import { useProjects } from '@/hooks/useProjects';
-import { Patent } from '@/types/patent';
+import { Tables } from '@/integrations/supabase/types';
+
+type Artist = Tables<'artists'>;
+type Project = Tables<'projects'>;
+type Patent = Tables<'patents'>;
 
 const Artists = () => {
-  const [activeTab, setActiveTab] = useState('artists');
+  const [activeTab, setActiveTab] = useState('projects');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('rating');
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [filters, setFilters] = useState({
+    category: 'All',
+    riskLevel: 'All',
+    fundingRange: [0, 500000],
+    verified: false
+  });
   
   const { artists, isLoading: artistsLoading } = useArtists();
   const { projects, stakingPools, patents: patentsByProject, isLoading: projectsLoading } = useProjects();
@@ -21,15 +35,7 @@ const Artists = () => {
   const patents: Record<number, Patent> = useMemo(() => {
     const convertedPatents: Record<number, Patent> = {};
     Object.entries(patentsByProject).forEach(([projectId, patent]) => {
-      convertedPatents[parseInt(projectId)] = {
-        id: parseInt(patent.id), // Convert string to number for compatibility
-        title: patent.title,
-        description: patent.description,
-        status: patent.status,
-        patent_number: patent.patent_number || '',
-        filing_date: patent.filing_date,
-        category: patent.category,
-      };
+      convertedPatents[parseInt(projectId)] = patent;
     });
     return convertedPatents;
   }, [patentsByProject]);
@@ -67,6 +73,17 @@ const Artists = () => {
     });
   }, [filteredArtists, sortBy]);
 
+  // Transform artists to match ArtistCard expected interface
+  const transformedArtists = useMemo(() => {
+    return sortedArtists.map(artist => ({
+      ...artist,
+      totalRaised: Number(artist.total_raised),
+      completedProjects: artist.completed_projects,
+      currentProject: artist.current_project || 'No active project',
+      verified: artist.verified
+    }));
+  }, [sortedArtists]);
+
   if (isLoading) {
     return (
       <Layout>
@@ -82,45 +99,21 @@ const Artists = () => {
   return (
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
-        <ArtistHeader />
-        
-        <div className="flex space-x-4 mb-6">
-          <button
-            onClick={() => setActiveTab('artists')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'artists'
-                ? 'bg-neon-gradient text-white'
-                : 'text-gray-400 hover:text-white border border-gray-600'
-            }`}
-          >
-            Artists
-          </button>
-          <button
-            onClick={() => setActiveTab('projects')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'projects'
-                ? 'bg-neon-gradient text-white'
-                : 'text-gray-400 hover:text-white border border-gray-600'
-            }`}
-          >
-            Projects
-          </button>
-        </div>
+        <ArtistHeader 
+          onCreateProject={() => setShowCreateProject(true)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
         {activeTab === 'artists' && (
           <>
             <ArtistFilters
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedGenre={selectedGenre}
-              onGenreChange={setSelectedGenre}
-              genres={genres}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
+              filters={filters}
+              onFiltersChange={setFilters}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedArtists.map((artist) => (
+              {transformedArtists.map((artist) => (
                 <ArtistCard key={artist.id} artist={artist} />
               ))}
             </div>
@@ -140,7 +133,6 @@ const Artists = () => {
             {projects.map((project) => {
               const artist = artists.find(a => a.id === project.artist_id);
               const artistName = artist ? artist.name : 'Unknown Artist';
-              const stakingPool = stakingPools[project.id];
               const patent = patents[project.id];
 
               return (
@@ -154,6 +146,15 @@ const Artists = () => {
             })}
           </div>
         )}
+
+        {activeTab === 'myProjects' && (
+          <MyProjectsView />
+        )}
+
+        <CreateProjectModal
+          open={showCreateProject}
+          onOpenChange={setShowCreateProject}
+        />
       </div>
     </Layout>
   );
