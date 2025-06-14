@@ -1,5 +1,5 @@
+
 import { http } from "viem";
-import { Account } from "viem/accounts";
 import { StoryClient, StoryConfig, SupportedChainIds } from "@story-protocol/core-sdk";
 import { storyAeneid } from "wagmi/chains";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ const getApiKeys = async () => {
 export const getStoryClient = async (account: `0x${string}`) => {
   const { transport, chainId } = await getStoryRpcConfig();
   const config: StoryConfig = {
-    account: account as Account,
+    account: account,
     transport: transport,
     chainId: chainId
   };

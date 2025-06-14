@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAccount, useWalletClient } from 'wagmi';
 import { getStoryClient } from '@/contexts/StoryKit';
@@ -14,9 +15,9 @@ export function useStoryClient() {
     const initializeClient = async () => {
       setIsLoading(true);
       setError(null);
-      if (isConnected && walletClient && walletClient.account) {
+      if (isConnected && address) {
         try {
-          const client = await getStoryClient(walletClient.account);
+          const client = await getStoryClient(address);
           setStoryClient(client);
         } catch (err) {
           console.error("Error initializing StoryClient:", err);
@@ -30,7 +31,7 @@ export function useStoryClient() {
     };
 
     initializeClient();
-  }, [isConnected, walletClient]);
+  }, [isConnected, address]);
 
   return { storyClient, isLoading, error };
-} 
+}

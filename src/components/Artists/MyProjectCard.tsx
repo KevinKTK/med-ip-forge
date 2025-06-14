@@ -1,252 +1,156 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Edit, 
-  Trash2, 
-  Eye, 
-  MoreVertical, 
-  Calendar,
-  Target,
-  TrendingUp,
-  Image as ImageIcon
-} from 'lucide-react';
-import { useState } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MoreVertical, Edit, Trash2, Eye, Share2, DollarSign } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tables } from '@/integrations/supabase/types';
+
+type MyProject = Tables<'projects'>;
 
 interface MyProjectCardProps {
-  project: any;
+  project: MyProject;
   onEdit: () => void;
   onDelete: () => void;
   onUpdateStatus: (status: string) => void;
 }
 
 export const MyProjectCard = ({ project, onEdit, onDelete, onUpdateStatus }: MyProjectCardProps) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const getStatusColor = (status: string) => {
+  const [imageError, setImageError] = useState(false);
+  
+  // Safely parse images from Json type
+  const images = Array.isArray(project.images) ? project.images as string[] : [];
+  const primaryImage = images.length > 0 ? images[0] : null;
+  
+  const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'draft':
-        return 'bg-gray-500/20 text-gray-400';
-      case 'published':
-        return 'bg-blue-500/20 text-blue-400';
-      case 'funded':
-        return 'bg-green-500/20 text-green-400';
-      case 'completed':
-        return 'bg-purple-500/20 text-purple-400';
-      default:
-        return 'bg-gray-500/20 text-gray-400';
+      case 'published': return 'bg-green-500';
+      case 'funded': return 'bg-blue-500';
+      case 'completed': return 'bg-purple-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const fundingPercentage = (project.current_funding / project.target_funding) * 100;
-
-  const handleStatusChange = (newStatus: string) => {
-    onUpdateStatus(newStatus);
+  const getStatusText = (status: string | null) => {
+    return status?.charAt(0).toUpperCase() + (status?.slice(1) || 'draft');
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const fundingProgress = project.target_funding > 0 
+    ? (Number(project.current_funding) / Number(project.target_funding)) * 100 
+    : 0;
 
   return (
-    <Card className="glass-card hover:shadow-neon transition-all duration-300 group">
+    <Card className="pixel-card hover:shadow-cyber transition-all duration-300 group">
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Badge className={getStatusColor(project.project_status)}>
-                {project.project_status}
+              <Badge className={`${getStatusColor(project.project_status)} text-white`}>
+                {getStatusText(project.project_status)}
               </Badge>
-              <Badge variant="outline" className="neon-border text-xs">
-                {project.category}
-              </Badge>
+              <span className="text-xs text-gray-400">{project.category}</span>
             </div>
-            <CardTitle className="text-lg text-white mb-1 line-clamp-2">
-              {project.title}
-            </CardTitle>
-            <p className="text-sm text-gray-400 line-clamp-2">{project.description}</p>
+            <CardTitle className="text-lg text-white line-clamp-2">{project.title}</CardTitle>
           </div>
-          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="glass-card border-white/10">
-              <DropdownMenuItem onClick={onEdit}>
+            <DropdownMenuContent align="end" className="bg-black border-cyber-green">
+              <DropdownMenuItem onClick={onEdit} className="text-white hover:bg-cyber-green/20">
                 <Edit className="w-4 h-4 mr-2" />
-                Edit Project
+                Edit
               </DropdownMenuItem>
-              
-              {project.project_status === 'draft' && (
-                <DropdownMenuItem onClick={() => handleStatusChange('published')}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Publish Project
-                </DropdownMenuItem>
-              )}
-              
-              {project.project_status === 'published' && (
-                <DropdownMenuItem onClick={() => handleStatusChange('draft')}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Move to Draft
-                </DropdownMenuItem>
-              )}
-              
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-400 hover:text-red-300"
-              >
+              <DropdownMenuItem className="text-white hover:bg-cyber-green/20">
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-white hover:bg-cyber-green/20">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDelete} className="text-red-400 hover:bg-red-500/20">
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Project
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="space-y-4">
-          {/* Project Images */}
-          {project.images && project.images.length > 0 && (
-            <div className="relative">
-              {project.images.length === 1 ? (
-                <img
-                  src={project.images[0]}
-                  alt="Project image"
-                  className="w-full h-32 object-cover rounded-lg"
-                />
-              ) : (
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {project.images.map((image: string, index: number) => (
-                      <CarouselItem key={index}>
-                        <img
-                          src={image}
-                          alt={`Project image ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  {project.images.length > 1 && (
-                    <>
-                      <CarouselPrevious className="left-2" />
-                      <CarouselNext className="right-2" />
-                    </>
-                  )}
-                </Carousel>
-              )}
-              <Badge className="absolute top-2 right-2 bg-black/60 text-white">
-                <ImageIcon className="w-3 h-3 mr-1" />
-                {project.images.length}
-              </Badge>
-            </div>
-          )}
-
-          {/* Funding Progress */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Funding Progress</span>
-              <span className="text-white">{fundingPercentage.toFixed(1)}%</span>
-            </div>
-            <Progress value={fundingPercentage} className="h-2" />
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">
-                {formatCurrency(project.current_funding)} raised
-              </span>
-              <span className="text-white">
-                {formatCurrency(project.target_funding)} goal
-              </span>
-            </div>
+      <CardContent className="space-y-4">
+        {/* Project Image */}
+        {primaryImage && !imageError ? (
+          <div className="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-neon-blue/20 to-neon-purple/20">
+            <img 
+              src={primaryImage} 
+              alt={project.title}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
           </div>
-
-          {/* Project Stats */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-neon-blue" />
-              <span className="text-gray-400">Created</span>
-            </div>
-            <div className="text-white">
-              {new Date(project.created_at).toLocaleDateString()}
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-neon-green" />
-              <span className="text-gray-400">Risk</span>
-            </div>
-            <div className="text-white">{project.risk_level}</div>
+        ) : (
+          <div className="aspect-video rounded-lg bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 flex items-center justify-center">
+            <span className="text-gray-400 text-sm">No image</span>
           </div>
+        )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onEdit}
-              className="flex-1 neon-border"
+        {/* Project Description */}
+        <p className="text-gray-300 text-sm line-clamp-3">{project.description}</p>
+
+        {/* Funding Progress */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Funding Progress</span>
+            <span className="text-white">${Number(project.current_funding).toLocaleString()} / ${Number(project.target_funding).toLocaleString()}</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              className="bg-neon-gradient h-2 rounded-full transition-all duration-300"
+              style={{ width: `${Math.min(fundingProgress, 100)}%` }}
+            />
+          </div>
+          <div className="text-xs text-gray-400">
+            {fundingProgress.toFixed(1)}% funded
+          </div>
+        </div>
+
+        {/* Milestones */}
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Milestones</span>
+          <span className="text-white">{project.completed_milestones} / {project.milestones}</span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-2">
+          {project.project_status === 'draft' && (
+            <Button 
+              size="sm" 
+              className="flex-1 bg-neon-blue hover:bg-neon-blue/80"
+              onClick={() => onUpdateStatus('published')}
             >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
+              Publish
             </Button>
-            
-            {project.project_status === 'draft' && (
-              <Button
-                size="sm"
-                onClick={() => handleStatusChange('published')}
-                className="flex-1 bg-neon-blue hover:bg-neon-blue/80"
-              >
-                Publish
-              </Button>
-            )}
-          </div>
+          )}
+          {project.project_status === 'published' && (
+            <Button 
+              size="sm" 
+              className="flex-1 bg-green-500 hover:bg-green-600"
+              onClick={() => onUpdateStatus('funded')}
+            >
+              <DollarSign className="w-4 h-4 mr-1" />
+              Fund
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="flex-1" onClick={onEdit}>
+            <Edit className="w-4 h-4 mr-1" />
+            Edit
+          </Button>
         </div>
       </CardContent>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="glass-card p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-white mb-2">Delete Project</h3>
-            <p className="text-gray-400 mb-4">
-              Are you sure you want to delete "{project.title}"? This action cannot be undone.
-            </p>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  onDelete();
-                  setShowDeleteConfirm(false);
-                }}
-              >
-                Delete Project
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </Card>
   );
 };

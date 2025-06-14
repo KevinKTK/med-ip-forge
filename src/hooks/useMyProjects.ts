@@ -3,23 +3,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAccount } from 'wagmi';
+import { Tables } from '@/integrations/supabase/types';
 
-interface MyProject {
-  id: number;
-  title: string;
-  description: string;
-  detailed_description: string | null;
-  images: string[];
-  marketing_materials: any;
-  project_status: string;
-  category: string;
-  target_funding: number;
-  current_funding: number;
-  risk_level: string;
-  created_at: string;
-  artist_id: number;
-  owner_wallet_address: string | null;
-}
+type MyProject = Tables<'projects'>;
 
 export function useMyProjects() {
   const [projects, setProjects] = useState<MyProject[]>([]);
@@ -51,7 +37,7 @@ export function useMyProjects() {
     }
   };
 
-  const updateProject = async (projectId: number, updates: Partial<MyProject>) => {
+  const updateProject = async (projectId: number, updates: Partial<Omit<MyProject, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       const { error } = await supabase
         .from('projects')

@@ -1,8 +1,11 @@
+
 import { supabase } from './client'
-import { Patent } from './types'
+import { Tables } from './types'
 import { sha256 } from 'js-sha256'
 import axios from 'axios'
 import { Address, zeroAddress } from 'viem'
+
+type Patent = Tables<'patents'>;
 
 // Helper to get artist by wallet address
 export async function getArtistByAddress(walletAddress: `0x${string}`) {
@@ -42,7 +45,6 @@ export async function uploadJSONToIPFS(jsonMetadata: any): Promise<string> {
   }
 
   console.log('Pinata JWT successfully retrieved.');
-  // console.log('Pinata JWT (first 10 chars): ', pinataJWT.substring(0, 10)); // Log only a part for security
 
   const url = 'https://api.pinata.cloud/pinning/pinJSONToIPFS'
   const options = {
@@ -78,7 +80,7 @@ export async function registerPatent(
   patentNumber: string,
   ipMetadata: any,
   nftMetadata: any,
-  projectId: number | null = null // Add optional projectId
+  projectId: number | null = null
 ): Promise<Patent> {
   // Upload metadata to IPFS
   const ipIpfsHash = await uploadJSONToIPFS(ipMetadata)
@@ -101,7 +103,6 @@ export async function registerPatent(
       nft_metadata_uri: `https://ipfs.io/ipfs/${nftIpfsHash}`,
       nft_metadata_hash: `0x${nftHash}`,
       status: 'pending',
-      created_at: new Date().toISOString(),
       project_id: projectId
     })
     .select()

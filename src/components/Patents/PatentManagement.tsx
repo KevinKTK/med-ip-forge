@@ -1,11 +1,14 @@
+
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { getStoryClient } from '@/contexts/StoryKit'
 import { registerPatent, updatePatentWithIPId, updatePatentWithLicenseTerms, getPatentsByArtist, getArtistByAddress } from '@/integrations/supabase/patents'
 import { createCommercialRemixTerms } from '@/utils/licensing'
 import { SPGNFTContractAddress } from '@/utils/config'
-import type { Patent } from '@/integrations/supabase/types'
+import { Tables } from '@/integrations/supabase/types'
 import { Button } from '@/components/ui/button'
+
+type Patent = Tables<'patents'>;
 
 interface PatentManagementProps {
   isModalOpen: boolean;
@@ -99,14 +102,17 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
         ],
       }
 
-      // 3. Register patent in Supabase
+      // 3. Register patent in Supabase with correct arguments
       const patent = await registerPatent(
-        artist.id, // Use the numerical artist ID
+        artist.id,
         formData.title,
         formData.description,
+        'Technology', // category
+        new Date().toISOString(), // filing_date
+        `TEMP-${Date.now()}`, // patent_number
         ipMetadata,
-        nftMetadata
-        // projectId is optional, will be null if not provided
+        nftMetadata,
+        null // projectId
       )
 
       // 4. Get Story Protocol client
@@ -147,7 +153,7 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
         mediaType: '',
       })
       setIsModalOpen(false)
-    } catch (err: any) { // Catch as any to safely access message
+    } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
@@ -352,4 +358,4 @@ export default function PatentManagement({ isModalOpen, setIsModalOpen }: Patent
       </div>
     </>
   )
-} 
+}

@@ -1,3 +1,4 @@
+
 import Staking from '@/contracts/Staking.json';
 import Funding from '@/contracts/Funding.json';
 import {useState} from 'react';
@@ -34,7 +35,7 @@ export function useStakingPoolDeployer() {
   const deployContract = async (params: DeployParams) => {
     const { projectId, contractType, maxFunding, apy, poolName, lockupPeriods, totalPoolSize } = params;
 
-    if (!walletClient) {
+    if (!walletClient || !walletClient.account) {
       throw new StakingError("Wallet not connected", "WALLET_NOT_CONNECTED");
     }
 
@@ -153,7 +154,7 @@ export function useStakingPoolDeployer() {
         abi: contractAbi,
         bytecode: contractBytecode,
         args: contractArgs,
-        type: 'eip1559',
+        account: walletClient.account,
         chain: storyAeneid,
       });
 
