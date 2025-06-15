@@ -12,7 +12,7 @@ import { Tables } from '@/integrations/supabase/types';
 
 type Artist = Tables<'artists'>;
 type Project = Tables<'projects'>;
-type Patent = Tables<'patents'>; // Use Supabase type which has string id
+type Patent = Tables<'patents'>; // Use Supabase type directly
 
 const Artists = () => {
   const [activeTab, setActiveTab] = useState('projects');

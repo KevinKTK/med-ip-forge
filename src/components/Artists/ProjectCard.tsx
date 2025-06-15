@@ -14,6 +14,7 @@ import { parseEther } from 'viem';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import {StakingPoolCard} from "@/components/Staking/StakingPoolCard.tsx";
+import { Tables } from '@/integrations/supabase/types';
 
 interface Project {
   id: number;
@@ -37,10 +38,7 @@ interface StakingPool {
   is_active: boolean;
 }
 
-interface Patent {
-  id: number;
-  title: string;
-}
+type Patent = Tables<'patents'>; // Use Supabase type directly
 
 interface ProjectCardProps {
   project: Project;
