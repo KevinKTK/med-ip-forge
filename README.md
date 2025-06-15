@@ -4,6 +4,7 @@
 
 Medici is an innovative intellectual property rights marketplace built on the Story Protocol. It empowers creators and innovators to register their intellectual property (IP) on-chain, providing a transparent and secure platform for managing their rights.
 
+Deployed on: https://medici-story-ip.lovable.app/
 ### Key Features:
 
 - **IP Registration**: Creators can register their patents, copyrights, and other forms of intellectual property on the Story Protocol.
