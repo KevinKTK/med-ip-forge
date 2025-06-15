@@ -103,10 +103,10 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
   };
 
   const formatIP = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return "$IP " + new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(amount) + ' $IP';
+    }).format(amount);
   };
 
   const handleFundNow = async () => {
