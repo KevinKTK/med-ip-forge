@@ -193,6 +193,7 @@ export type Database = {
           created_at: string
           current_funding: number
           description: string
+          detailed_description: string
           funding_contract_id: number | null
           id: number
           images: Json | null
@@ -216,6 +217,7 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description: string
+          detailed_description: string
           funding_contract_id?: number | null
           id?: never
           images?: Json | null
@@ -239,6 +241,7 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description?: string
+          detailed_description?: string
           funding_contract_id?: number | null
           id?: never
           images?: Json | null
