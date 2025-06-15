@@ -5,12 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAccount } from 'wagmi';
 import { Tables } from '@/integrations/supabase/types';
 
-type MyProject = Tables<'projects'> & {
-  images?: string[];
-  project_status?: string;
-  marketing_materials?: any;
-  owner_wallet_address?: string;
-};
+type MyProject = Tables<'projects'>;
 
 export function useMyProjects() {
   const [projects, setProjects] = useState<MyProject[]>([]);

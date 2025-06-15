@@ -4,12 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 
-type Project = Tables<'projects'> & {
-  images?: string[];
-  project_status?: string;
-  marketing_materials?: any;
-  owner_wallet_address?: string;
-};
+type Project = Tables<'projects'>;
 type StakingPool = Tables<'staking_pools'>;
 type Patent = Tables<'patents'>;
 
@@ -78,12 +73,21 @@ export function useProjects() {
       const { data: newProject, error: projectError } = await supabase
         .from('projects')
         .insert({
-          ...projectData,
+          artist_id: projectData.artist_id!,
+          title: projectData.title!,
+          description: projectData.description!,
+          category: projectData.category!,
+          target_funding: projectData.target_funding!,
+          milestones: projectData.milestones!,
+          risk_level: projectData.risk_level!,
+          staking_apy: projectData.staking_apy!,
+          time_remaining: projectData.time_remaining!,
           current_funding: 0,
           completed_milestones: 0,
           images: projectData.images || [],
           marketing_materials: projectData.marketing_materials || {},
           project_status: projectData.project_status || 'draft',
+          owner_wallet_address: projectData.owner_wallet_address,
         })
         .select()
         .single();

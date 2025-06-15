@@ -7,12 +7,7 @@ import { MoreVertical, Edit, Trash2, Eye, Share2, DollarSign } from 'lucide-reac
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tables } from '@/integrations/supabase/types';
 
-type MyProject = Tables<'projects'> & {
-  images?: string[];
-  project_status?: string;
-  marketing_materials?: any;
-  owner_wallet_address?: string;
-};
+type MyProject = Tables<'projects'>;
 
 interface MyProjectCardProps {
   project: MyProject;
@@ -24,8 +19,8 @@ interface MyProjectCardProps {
 export const MyProjectCard = ({ project, onEdit, onDelete, onUpdateStatus }: MyProjectCardProps) => {
   const [imageError, setImageError] = useState(false);
   
-  // Safely parse images from Json type or fallback to empty array
-  const images = Array.isArray(project.images) ? project.images : [];
+  // Safely parse images from Json type - convert to string array if it's an array
+  const images = Array.isArray(project.images) ? project.images as string[] : [];
   const primaryImage = images.length > 0 ? images[0] : null;
   
   const getStatusColor = (status: string | null | undefined) => {

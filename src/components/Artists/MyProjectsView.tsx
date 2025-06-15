@@ -6,6 +6,9 @@ import { useMyProjects } from '@/hooks/useMyProjects';
 import { ProjectEditModal } from './ProjectEditModal';
 import { MyProjectCard } from './MyProjectCard';
 import { Filter, Plus } from 'lucide-react';
+import { Tables } from '@/integrations/supabase/types';
+
+type MyProject = Tables<'projects'>;
 
 interface MyProjectsViewProps {
   onCreateProject: () => void;
@@ -14,7 +17,7 @@ interface MyProjectsViewProps {
 export const MyProjectsView = ({ onCreateProject }: MyProjectsViewProps) => {
   const { projects, isLoading, updateProject, deleteProject } = useMyProjects();
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [editingProject, setEditingProject] = useState<any>(null);
+  const [editingProject, setEditingProject] = useState<MyProject | null>(null);
 
   const filteredProjects = projects.filter(project => 
     statusFilter ? project.project_status === statusFilter : true
