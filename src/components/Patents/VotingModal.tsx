@@ -29,7 +29,7 @@ export const VotingModal = ({ isOpen, onClose, project }: VotingModalProps) => {
   };
 
   const handleVote = () => {
-    console.log(`Voting for ${project.name} with ${stakeAmount} $IP`);
+    console.log(`Voting for ${project.name} with $IP ${stakeAmount}`);
     // Handle voting logic here
     onClose();
   };
@@ -81,7 +81,7 @@ export const VotingModal = ({ isOpen, onClose, project }: VotingModalProps) => {
               placeholder="Enter amount to stake"
               className="w-full px-4 py-3 bg-black/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-neon-blue focus:outline-none"
             />
-            
+
             {votingPower > 0 && (
               <div className="p-3 bg-neon-blue/10 border border-neon-blue/30 rounded-lg">
                 <div className="flex items-center justify-between">

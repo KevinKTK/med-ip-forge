@@ -23,7 +23,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             title="Total Market Cap"
-            value="$47.2M"
+            value="$IP 47.2M"
             change="12.3%"
             positive={true}
             icon={<BarChart3 className="w-8 h-8" />}
@@ -37,7 +37,7 @@ const Index = () => {
           />
           <StatCard
             title="Total Staked"
-            value="$23.8M"
+            value="$IP 2.2M"
             change="8.9%"
             positive={true}
             icon={<Wallet className="w-8 h-8" />}

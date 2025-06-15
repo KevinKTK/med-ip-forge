@@ -11,7 +11,7 @@ export const RewardsPanel = () => {
   const handleClaimRewards = () => {
     toast({
       title: "Rewards Claimed!",
-      description: "Successfully claimed $1,840 in rewards.",
+      description: "Successfully claimed $IP 1,840 in rewards.",
     });
   };
 
@@ -23,13 +23,13 @@ export const RewardsPanel = () => {
           Rewards Summary
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="text-center p-4 bg-neon-gradient/10 rounded-lg border border-neon-blue/20">
           <p className="text-sm text-gray-400">Total Claimable</p>
-          <p className="text-2xl font-bold text-neon-blue">$1,840.52</p>
+          <p className="text-2xl font-bold text-neon-blue">$IP 1,840.52</p>
         </div>
-        
+
         <div className="space-y-3">
           <div className="flex justify-between items-center p-3 bg-background/30 rounded">
             <div>
@@ -44,7 +44,7 @@ export const RewardsPanel = () => {
               </Badge>
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center p-3 bg-background/30 rounded">
             <div>
               <p className="text-white font-medium">AI Copyright Pool</p>
@@ -58,7 +58,7 @@ export const RewardsPanel = () => {
               </Badge>
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center p-3 bg-background/30 rounded">
             <div>
               <p className="text-white font-medium">Green Energy Pool</p>
@@ -73,15 +73,15 @@ export const RewardsPanel = () => {
             </div>
           </div>
         </div>
-        
-        <Button 
+
+        <Button
           onClick={handleClaimRewards}
           className="w-full bg-neon-gradient hover:opacity-90"
         >
           <Download className="w-4 h-4 mr-2" />
           Claim All Rewards
         </Button>
-        
+
         <div className="text-center">
           <p className="text-xs text-gray-400">
             Next payout in <span className="text-neon-blue">2 days, 14 hours</span>

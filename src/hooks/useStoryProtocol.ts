@@ -114,8 +114,8 @@ export const useStoryProtocol = () => {
       return { id: response.ipId, address: response.ipId, chain: storyAeneid.id };
 
     } catch (err: any) {
-      console.error("Error minting and registering IP asset:", err);
-      const errorMessage = err.message || "Failed to mint and register IP asset.";
+      console.error("Error minting and registering $IP asset:", err);
+      const errorMessage = err.message || "Failed to mint and register $IP asset.";
       toast({
         title: "IP Asset Registration Failed",
         description: errorMessage,

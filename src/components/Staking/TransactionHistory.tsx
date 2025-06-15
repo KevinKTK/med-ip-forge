@@ -9,7 +9,7 @@ const transactions = [
     id: 1,
     type: 'Stake',
     asset: 'MediTech Patents',
-    amount: '$5,000',
+    amount: '$IP 5,000',
     date: '2024-01-15',
     status: 'Confirmed',
     txHash: '0x1234...abcd'
@@ -18,7 +18,7 @@ const transactions = [
     id: 2,
     type: 'Reward',
     asset: 'AI Copyright Pool',
-    amount: '$485.20',
+    amount: '$IP 485.20',
     date: '2024-01-14',
     status: 'Confirmed',
     txHash: '0x5678...efgh'
@@ -27,7 +27,7 @@ const transactions = [
     id: 3,
     type: 'Unstake',
     asset: 'Green Energy Pool',
-    amount: '$2,500',
+    amount: '$IP 2,500',
     date: '2024-01-13',
     status: 'Pending',
     txHash: '0x9012...ijkl'
@@ -36,7 +36,7 @@ const transactions = [
     id: 4,
     type: 'Stake',
     asset: 'Entertainment IP',
-    amount: '$3,200',
+    amount: '$IP 3,200',
     date: '2024-01-12',
     status: 'Confirmed',
     txHash: '0x3456...mnop'
@@ -75,7 +75,7 @@ export const TransactionHistory = () => {
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-3">
         {transactions.map((tx) => (
           <div key={tx.id} className="p-3 bg-background/30 rounded-lg border border-white/5">
@@ -86,7 +86,7 @@ export const TransactionHistory = () => {
               </div>
               <p className="text-white font-medium">{tx.amount}</p>
             </div>
-            
+
             <div className="space-y-1">
               <p className="text-sm text-white">{tx.asset}</p>
               <div className="flex items-center justify-between">
@@ -103,7 +103,7 @@ export const TransactionHistory = () => {
             </div>
           </div>
         ))}
-        
+
         <Button variant="outline" className="w-full neon-border text-sm">
           View All Transactions
         </Button>

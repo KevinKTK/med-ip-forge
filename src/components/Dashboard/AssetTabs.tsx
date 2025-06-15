@@ -7,7 +7,7 @@ const mockAssets = [
     title: "The Beatles Complete Discography",
     type: "Copyright" as const,
     creator: "Abbey Road Studios",
-    marketCap: "$2.4M",
+    marketCap: "$IP 2.4M",
     completion: 78,
     apy: "12.5%"
   },
@@ -15,7 +15,7 @@ const mockAssets = [
     title: "Tesla Battery Technology Patent",
     type: "Patent" as const,
     creator: "Tesla Inc.",
-    marketCap: "$5.1M",
+    marketCap: "$IP 5.1M",
     completion: 45,
     apy: "18.2%"
   },
@@ -23,7 +23,7 @@ const mockAssets = [
     title: "Netflix Original Series Rights",
     type: "Copyright" as const,
     creator: "Netflix Studios",
-    marketCap: "$3.8M",
+    marketCap: "$IP 3.8M",
     completion: 92,
     apy: "9.8%"
   },
@@ -31,7 +31,7 @@ const mockAssets = [
     title: "Apple iOS Interface Patent",
     type: "Patent" as const,
     creator: "Apple Inc.",
-    marketCap: "$8.2M",
+    marketCap: "$IP 8.2M",
     completion: 67,
     apy: "15.4%"
   },
@@ -39,7 +39,7 @@ const mockAssets = [
     title: "Marvel Character IP Rights",
     type: "Copyright" as const,
     creator: "Marvel Entertainment",
-    marketCap: "$12.5M",
+    marketCap: "$IP 12.5M",
     completion: 34,
     apy: "22.1%"
   },
@@ -47,7 +47,7 @@ const mockAssets = [
     title: "Google Search Algorithm Patent",
     type: "Patent" as const,
     creator: "Google LLC",
-    marketCap: "$15.7M",
+    marketCap: "$IP 15.7M",
     completion: 56,
     apy: "14.8%"
   }

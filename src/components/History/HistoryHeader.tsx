@@ -9,7 +9,7 @@ export const HistoryHeader = () => {
         <h1 className="text-4xl font-retro neon-text mb-4 glitch-text" data-text="TRANSACTION HISTORY">TRANSACTION HISTORY</h1>
         <p className="text-cyber-purple/80 font-pixel text-lg">Comprehensive log of all your IP token activities, trades, stakes, and rewards</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <StatCard
           title="Total Transactions"
@@ -20,7 +20,7 @@ export const HistoryHeader = () => {
         />
         <StatCard
           title="Volume (30d)"
-          value="$45.2K"
+          value="$IP 45.2K"
           change="18.5%"
           positive={true}
           icon={<Coins className="w-8 h-8" />}
@@ -34,7 +34,7 @@ export const HistoryHeader = () => {
         />
         <StatCard
           title="Rewards Claimed"
-          value="$8.4K"
+          value="$IP 8.4K"
           change="12.8%"
           positive={true}
           icon={<TrendingUp className="w-8 h-8" />}

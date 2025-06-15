@@ -16,7 +16,7 @@ const chartConfig = {
     color: '#00D4FF',
   },
   patents: {
-    label: 'Patents', 
+    label: 'Patents',
     color: '#B83DFF',
   },
 };
@@ -46,21 +46,21 @@ export const AllocationChart = () => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <ChartTooltip 
+            <ChartTooltip
               content={<ChartTooltipContent />}
               formatter={(value, name, props) => [
-                `${value}% ($${props.payload.amount.toLocaleString()})`,
+                `${value}% ($IP ${props.payload.amount.toLocaleString()})`,
                 name
               ]}
             />
           </PieChart>
         </ChartContainer>
-        
+
         {/* Legend */}
         <div className="flex justify-center space-x-6 mt-4">
           {allocationData.map((item, index) => (
             <div key={item.name} className="flex items-center space-x-2">
-              <div 
+              <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: COLORS[index] }}
               />

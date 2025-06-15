@@ -31,7 +31,7 @@ const formatIP = (amount: number) => {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount) + ' IP';
+  }).format(amount) + ' $IP';
 };
 
 export const StakingPoolCard: React.FC<StakingPoolCardProps> = ({ pool, project, artistName, onOpenStakingModal }) => {

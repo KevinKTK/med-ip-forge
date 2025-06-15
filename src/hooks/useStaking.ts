@@ -48,7 +48,7 @@ export const useStaking = (projectId: number) => {
 
           // Get the on-chain total staked amount
           const onChainTotalStaked = totalStakedOnChain ? Number(formatEther(totalStakedOnChain)) : 0;
-          
+
           // Calculate new totals combining on-chain and Supabase data
           const newTotalStaked = onChainTotalStaked;
           // For simplicity, increment stakers by 1. A more robust solution might check if the address is new.
@@ -68,7 +68,7 @@ export const useStaking = (projectId: number) => {
           // The UI will sum this constant with the on-chain staked amount.
           // Therefore, we no longer update current_funding in the database here.
 
-          toast.success(`Successfully staked ${amount} IP in ${stakingPool.name}. Total staked: ${newTotalStaked.toFixed(2)} IP`);
+          toast.success(`Successfully staked $IPP ${amount} in ${stakingPool.name}. Total staked: ${newTotalStaked.toFixed(2)} IP`);
           // Refresh the staking pool data in the hook to reflect changes immediately
           refreshStakingPool();
           setAmount(''); // Clear amount after successful stake and update

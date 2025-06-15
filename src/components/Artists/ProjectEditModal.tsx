@@ -160,7 +160,7 @@ export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }: Project
             </div>
 
             <div>
-              <Label htmlFor="targetFunding">Target Funding (USD)</Label>
+              <Label htmlFor="targetFunding">Target Funding ($IP)</Label>
               <Input
                 id="targetFunding"
                 type="number"

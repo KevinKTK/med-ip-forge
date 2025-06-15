@@ -21,11 +21,11 @@ export const StakingHeader = ({ onDeployNewPool }: StakingHeaderProps) => {
           Deploy New Pool
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <StatCard
           title="Total Staked"
-          value="45,280 $IP"
+          value="$IP 45,280"
           change="12.5%"
           positive={true}
           icon={<Coins className="w-8 h-8" />}
@@ -53,7 +53,7 @@ export const StakingHeader = ({ onDeployNewPool }: StakingHeaderProps) => {
         />
         <StatCard
           title="Revenue Share"
-          value="$2,340"
+          value="$IP 2,340"
           change="15.7%"
           positive={true}
           icon={<Timer className="w-8 h-8" />}

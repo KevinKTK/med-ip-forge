@@ -37,21 +37,21 @@ export const PerformanceChart = () => {
                 <stop offset="95%" stopColor="#00D4FF" stopOpacity={0.0}/>
               </linearGradient>
             </defs>
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9CA3AF', fontSize: 12 }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => `$IP ${(value / 1000).toFixed(0)}k`}
             />
-            <ChartTooltip 
+            <ChartTooltip
               content={<ChartTooltipContent />}
-              formatter={(value) => [`$${value.toLocaleString()}`, 'Portfolio Value']}
+              formatter={(value) => [`$IP ${value.toLocaleString()}`, 'Portfolio Value']}
             />
             <Area
               type="monotone"

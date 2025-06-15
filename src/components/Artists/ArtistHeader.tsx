@@ -22,7 +22,7 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
           CREATE PROJECT
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard
           title="Active Projects"
@@ -33,7 +33,7 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
         />
         <StatCard
           title="Total Funded"
-          value="$2.4M"
+          value="$IP 2.4M"
           change="25.1%"
           positive={true}
           icon={<DollarSign className="w-8 h-8" />}
@@ -53,7 +53,7 @@ export const ArtistHeader = ({ onCreateProject, activeTab, onTabChange }: Artist
           icon={<TrendingUp className="w-8 h-8" />}
         />
       </div>
-      
+
       <div className="flex space-x-2">
         <Button
           onClick={() => onTabChange('projects')}

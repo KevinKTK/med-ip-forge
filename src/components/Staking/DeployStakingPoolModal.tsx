@@ -231,7 +231,7 @@ export const DeployStakingPoolModal = ({ isOpen, onClose, onDeploySuccess }: Dep
               type="number"
               value={formData.totalPoolSize}
               onChange={(e) => setFormData({ ...formData, totalPoolSize: e.target.value })}
-              placeholder="e.g., 1000000 (total IP capacity)"
+              placeholder="e.g., 1000000 (total $IP capacity)"
               step="0.01"
               required
             />
@@ -248,4 +248,4 @@ export const DeployStakingPoolModal = ({ isOpen, onClose, onDeploySuccess }: Dep
       </DialogContent>
     </Dialog>
   );
-}; 
+};

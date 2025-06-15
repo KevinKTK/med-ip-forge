@@ -106,7 +106,7 @@ export const ProjectCard = ({ project, artistName, patent }: ProjectCardProps) =
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(amount) + ' IP';
+    }).format(amount) + ' $IP';
   };
 
   const handleFundNow = async () => {

@@ -29,7 +29,7 @@ export const PatentsHeader = ({ onOpenCreatePatentModal }: PatentsHeaderProps) =
         />
         <StatCard
           title="Total Funding"
-          value="$8.2M"
+          value="$IP 8.2M"
           change="18.5%"
           positive={true}
           icon={<Coins className="w-8 h-8" />}

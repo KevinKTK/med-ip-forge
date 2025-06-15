@@ -331,7 +331,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
             </div>
 
             <div>
-              <Label htmlFor="targetFunding">Target Funding (USD)</Label>
+              <Label htmlFor="targetFunding">Target Funding ($IP)</Label>
               <Input
                 id="targetFunding"
                 type="number"
@@ -417,7 +417,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectM
                 className="flex-1 bg-neon-gradient hover:opacity-90"
                 disabled={isCreating || isDeploying}
               >
-                {isCreating || isDeploying ? 'Creating Project...' : 
+                {isCreating || isDeploying ? 'Creating Project...' :
                  formData.projectStatus === 'published' ? 'Create & Publish' : 'Save Draft'}
               </Button>
             </div>

@@ -19,7 +19,7 @@ const Patents = () => {
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isCreatePatentModalOpen, setIsCreatePatentModalOpen] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
-  
+
   // Filter states for projects
   const [projectFilterStatus, setProjectFilterStatus] = useState<string | null>(null);
   const [projectSearchQuery, setProjectSearchQuery] = useState<string>('');
@@ -29,7 +29,7 @@ const Patents = () => {
       id: 1,
       name: 'Quantum Art Generator',
       ticker: '$QART',
-      marketCap: '$2.4M',
+      marketCap: '$IP 2.4M',
       completion: 78,
       compoundPercentage: 65,
       controlPercentage: 35,
@@ -42,7 +42,7 @@ const Patents = () => {
       id: 2,
       name: 'Neural Music Composer',
       ticker: '$NMUS',
-      marketCap: '$1.8M',
+      marketCap: '$IP 1.8M',
       completion: 45,
       compoundPercentage: 55,
       controlPercentage: 45,
@@ -55,7 +55,7 @@ const Patents = () => {
       id: 3,
       name: 'Bio-Digital Sculptures',
       ticker: '$BIOS',
-      marketCap: '$890K',
+      marketCap: '$IP 890K',
       completion: 23,
       compoundPercentage: 40,
       controlPercentage: 60,
@@ -122,7 +122,7 @@ const Patents = () => {
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
         <PatentsHeader onOpenCreatePatentModal={() => setIsCreatePatentModalOpen(true)} />
-        
+
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setActiveTab('projects')}
@@ -188,7 +188,7 @@ const Patents = () => {
 
         {activeTab === 'projects' && (
           <div className="space-y-6">
-            <ProjectFilters 
+            <ProjectFilters
               onSelectStatus={setProjectFilterStatus}
               onSearch={setProjectSearchQuery}
               currentStatus={projectFilterStatus}
@@ -226,7 +226,7 @@ const Patents = () => {
           onClose={() => setIsVotingModalOpen(false)}
           project={selectedProject}
         />
-        
+
         <RegisterPatentModal
           isOpen={isCreatePatentModalOpen}
           onClose={() => setIsCreatePatentModalOpen(false)}
