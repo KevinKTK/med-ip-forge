@@ -4,7 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 
-type Project = Tables<'projects'>;
+type Project = Tables<'projects'> & {
+  images?: string[];
+  project_status?: string;
+  marketing_materials?: any;
+  owner_wallet_address?: string;
+};
 type StakingPool = Tables<'staking_pools'>;
 type Patent = Tables<'patents'>;
 
@@ -68,7 +73,7 @@ export function useProjects() {
     }
   };
 
-  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'staking_pool_id' | 'funding_contract_id'>) => {
+  const createProject = async (projectData: Partial<Project>) => {
     try {
       const { data: newProject, error: projectError } = await supabase
         .from('projects')

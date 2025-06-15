@@ -5,7 +5,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useAccount } from 'wagmi';
 import { Tables } from '@/integrations/supabase/types';
 
-type MyProject = Tables<'projects'>;
+type MyProject = Tables<'projects'> & {
+  images?: string[];
+  project_status?: string;
+  marketing_materials?: any;
+  owner_wallet_address?: string;
+};
 
 export function useMyProjects() {
   const [projects, setProjects] = useState<MyProject[]>([]);
@@ -37,7 +42,7 @@ export function useMyProjects() {
     }
   };
 
-  const updateProject = async (projectId: number, updates: Partial<Omit<MyProject, 'id' | 'created_at' | 'updated_at'>>) => {
+  const updateProject = async (projectId: number, updates: any) => {
     try {
       const { error } = await supabase
         .from('projects')
