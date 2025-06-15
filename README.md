@@ -49,9 +49,9 @@ To set up and run this project locally, follow these steps:
     ```
 
 4.  **Database Setup (Supabase):**
-    Ensure your Supabase database has the `artists`, `projects`, and `patents` tables configured with the correct schema, including the columns discussed during development (e.g., `status`, `filing_date`, `patent_number`, `ip_asset_address`, `ip_asset_chain` as `text`, `date`, `text`, `text`, `integer` respectively).
+    Ensure your Supabase database has the `artists`, `projects`, and `patents` tables configured with the correct schema, including the columns discussed during development.
 
-    - You might need to run database migrations or manually create tables if starting from scratch. Refer to `src/scripts/createTables.sql` for expected data structure
+    - You might need to run database migrations or manually create tables if starting from scratch. Refer to `src/scripts/createTables.sql` for expected data structure.
 
 5.  **Seed the Database (Optional but Recommended):**
     To populate your Supabase database with mock data for testing:
@@ -78,7 +78,7 @@ This will start the development server. Open your browser and navigate to `http:
 
 ## Codebase Structure
 
-The project follows a standard React application structure, primarily organized within the `src/` directory.
+The project follows a standard React application structure, organized within the `src/` directory.
 
 ```
 src/
