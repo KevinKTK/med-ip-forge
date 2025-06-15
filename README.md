@@ -99,6 +99,7 @@ src/
 ├── scripts/
 ├── utils/
 ├── contexts/
+├── contracts/
 ├── App.tsx
 ├── index.css
 ├── vite-env.d.ts
@@ -122,6 +123,10 @@ This directory houses all reusable UI components. It's further organized into su
 - **`src/components/Layout.tsx`**: Defines the overall page layout
 - **`src/components/Navigation.tsx`**: Handles the main navigation menu of the application.
 
+#### `src/contracts/`
+
+This directory contains the on-chain smart contracts that define the core logic for funding and staking IP assets.
+
 #### `src/hooks/`
 
 This directory contains custom React hooks, which encapsulate reusable logic and stateful behavior.
@@ -136,7 +141,7 @@ This directory contains custom React hooks, which encapsulate reusable logic and
 This is where code for integrating with external services resides.
 
 - **`src/integrations/supabase/`**: Contains all logic related to interacting with the Supabase backend.
- 
+
 #### `src/pages/`
 
 These are the top-level components that represent different pages or routes in the application.
