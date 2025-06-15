@@ -40,7 +40,7 @@ To set up and run this project locally, follow these steps:
     ```
 
 3.  **Configure Environment Variables:**
-    Create a `.env` file in the root of your project and add your Supabase and other necessary environment variables. Refer to `.env.example` if available.
+    Create a `.env` file in the root of your project and add your Supabase and other necessary environment variables.
 
     ```
     VITE_SUPABASE_URL=your_supabase_url
