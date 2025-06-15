@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { ArtistHeader } from '@/components/Artists/ArtistHeader';
