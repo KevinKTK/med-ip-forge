@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
+# IP-Forge: Intellectual Property Rights Marketplace
 
-## Project info
+## Project Overview
 
-**URL**: https://lovable.dev/projects/dc1844f6-f648-41f8-818e-0c4fcda9ca2a
+IP-Forge is an innovative intellectual property rights marketplace built on the Story Protocol. It empowers creators and innovators to register their intellectual property (IP) on-chain, providing a transparent and secure platform for managing their rights.
 
-## How can I edit this code?
+### Key Features:
 
-There are several ways of editing your application.
+- **IP Registration**: Creators can register their patents, copyrights, and other forms of intellectual property on the Story Protocol.
+- **Community Funding**: Users can support their favorite IP assets through direct funding, helping creators bring their innovations to life.
+- **IP Staking**: Engage with the marketplace by staking on existing IP assets to earn rewards, fostering a vibrant ecosystem around intellectual property.
+- **Transparent Rights Management**: Leverage the power of blockchain and Story Protocol to ensure clear, immutable, and verifiable ownership and licensing of IP rights.
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/dc1844f6-f648-41f8-818e-0c4fcda9ca2a) and start prompting.
+To set up and run this project locally, follow these steps:
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js (LTS version recommended)
+- npm or yarn
+- A Supabase account with your database configured (including the `patents` and `artists` tables with the necessary columns).
+- Environment variables configured for Supabase and Story Protocol (e.g., `VITE_SUPABASE_URL`, `VITE_SUPABASE_API`, Story Protocol RPC endpoint, etc.).
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1.  **Clone the repository:**
 
-Follow these steps:
+    ```bash
+    git clone <repository-url>
+    cd med-ip-forge
+    ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2.  **Install dependencies:**
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3.  **Configure Environment Variables:**
+    Create a `.env` file in the root of your project and add your Supabase and other necessary environment variables. Refer to `.env.example` if available.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+    ```
+    VITE_SUPABASE_URL=your_supabase_url
+    VITE_SUPABASE_API=your_supabase_anon_key
+    # Add other Story Protocol related environment variables as needed
+    ```
+
+4.  **Database Setup (Supabase):**
+    Ensure your Supabase database has the `artists`, `projects`, and `patents` tables configured with the correct schema, including the columns discussed during development (e.g., `status`, `filing_date`, `patent_number`, `ip_asset_address`, `ip_asset_chain` as `text`, `date`, `text`, `text`, `integer` respectively).
+
+    - You might need to run database migrations or manually create tables if starting from scratch. Refer to `src/scripts/seedDatabase.ts` for expected data structure.
+
+5.  **Seed the Database (Optional but Recommended):**
+    To populate your local database with mock data for testing:
+    ```bash
+    npm run seed-database
+    # or
+    yarn seed-database
+    ```
+
+### Running the Application
+
+```bash
 npm run dev
+# or
+yarn dev
 ```
 
-**Edit a file directly in GitHub**
+This will start the development server. Open your browser and navigate to `http://localhost:5173` (or the port indicated in your terminal).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Technologies Used
 
-**Use GitHub Codespaces**
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Blockchain Integration**: Story Protocol SDK, Wagmi, Viem
+- **Database**: Supabase (PostgreSQL)
+- **UI Components**: Shadcn UI
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/dc1844f6-f648-41f8-818e-0c4fcda9ca2a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Contributions are welcome! Please feel free to open issues or submit pull requests.
