@@ -1,22 +1,24 @@
-
 import { Button } from '@/components/ui/button';
 import { Wallet, Users } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
-
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { useAccount, useDisconnect } from 'wagmi';
-
+import { useAccount, useDisconnect, useBalance } from 'wagmi';
+import { formatEther } from 'viem';
 
 export const Navigation = () => {
   const location = useLocation();
-
   const { openConnectModal } = useConnectModal();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  
+  // Get the native token balance (IP)
+  const { data: balance } = useBalance({
+    address: address,
+  });
+
   const shortenAddress = (addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
-
 
   const navItems = [
     { label: 'Dashboard', href: '/', active: location.pathname === '/' },
@@ -28,25 +30,22 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav className="pixel-card mx-4 mt-4 mb-6 relative">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/10">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
-              <div className="molecular-icon text-cyber-purple animate-pixel-pulse">
-              </div>
-              <span className="text-2xl font-retro subtle-glow glitch-text" data-text="MEDICI">MEDICI</span>
-            </div>
-
-            <div className="hidden md:flex space-x-1">
+            <Link to="/" className="text-xl font-bold gradient-text">
+              MEDICI
+            </Link>
+            <div className="hidden md:flex space-x-6">
               {navItems.map((item) => (
                 <Link
-                  key={item.label}
+                  key={item.href}
                   to={item.href}
-                  className={`px-4 py-2 font-retro text-xs uppercase transition-all ${
+                  className={`text-sm ${
                     item.active
-                      ? 'bg-cyber-purple text-white border-2 border-cyber-purple'
-                      : 'text-cyber-purple hover:bg-cyber-purple/10 border-2 border-transparent hover:border-cyber-purple'
+                      ? 'text-cyber-violet'
+                      : 'text-gray-400 hover:text-cyber-violet'
                   }`}
                 >
                   {item.label}
@@ -58,47 +57,44 @@ export const Navigation = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right mr-4 font-pixel">
               <p className="text-xs text-cyber-purple/70">$IP BALANCE</p>
-              <p className="text-lg font-bold text-cyber-violet">12,450 $IP</p>
+              <p className="text-lg font-bold text-cyber-violet">
+                {isConnected && balance ? `${Number(formatEther(balance.value)).toFixed(2)} $IP` : '0.00 $IP'}
+              </p>
             </div>
-            {/* --- 4. Conditionally render UI based on `isConnected` --- */}
             {isConnected ? (
-                // RENDER THIS WHEN WALLET IS CONNECTED
-                <div className="flex items-center gap-4">
-                  <p className="font-pixel text-xs text-cyber-violet hidden sm:block">
-                    {shortenAddress(address!)}
-                  </p>
-                  <Button
-                      variant="outline"
-                      size="sm"
-                      className="pixel-button"
-                      onClick={() => disconnect()}
-                  >
-                    Disconnect
-                  </Button>
-                </div>
+              <div className="flex items-center gap-4">
+                <p className="font-pixel text-xs text-cyber-violet hidden sm:block">
+                  {shortenAddress(address!)}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="pixel-button"
+                  onClick={() => disconnect()}
+                >
+                  Disconnect
+                </Button>
+              </div>
             ) : (
-                // RENDER THIS WHEN WALLET IS NOT CONNECTED
-                <div className="flex items-center gap-2">
-                  <Button
-                      variant="outline"
-                      size="sm"
-                      className="pixel-button"
-                      // Use the function from the hook here
-                      onClick={() => openConnectModal && openConnectModal()}
-                  >
-                    <Wallet className="w-4 h-4 mr-2" />
-                    CONNECT
-                  </Button>
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      className="border-2 border-cyber-magenta text-cyber-magenta hover:bg-cyber-magenta hover:text-black"
-                      // Both buttons can open the same modal
-                      onClick={() => openConnectModal && openConnectModal()}
-                  >
-                    <Users className="w-4 h-4" />
-                  </Button>
-                </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="pixel-button"
+                  onClick={() => openConnectModal && openConnectModal()}
+                >
+                  <Wallet className="w-4 h-4 mr-2" />
+                  CONNECT
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="border-2 border-cyber-magenta text-cyber-magenta hover:bg-cyber-magenta hover:text-black"
+                  onClick={() => openConnectModal && openConnectModal()}
+                >
+                  <Users className="w-4 h-4" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
