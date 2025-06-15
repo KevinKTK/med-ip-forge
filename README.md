@@ -76,6 +76,115 @@ This will start the development server. Open your browser and navigate to `http:
 - **Database**: Supabase (PostgreSQL)
 - **UI Components**: Shadcn UI
 
+## Codebase Structure
+
+The project follows a standard React application structure, primarily organized within the `src/` directory.
+
+```
+src/
+├── components/
+│   ├── Dashboard/
+│   ├── Staking/
+│   ├── Artists/
+│   ├── Patents/
+│   ├── ui/
+│   ├── Portfolio/
+│   ├── History/
+│   ├── Layout.tsx
+│   └── Navigation.tsx
+├── hooks/
+├── integrations/
+│   └── supabase/
+├── pages/
+├── scripts/
+├── utils/
+├── contexts/
+├── App.tsx
+├── index.css
+├── vite-env.d.ts
+├── main.tsx
+└── App.css
+```
+
+---
+
+#### `src/components/`
+
+This directory houses all reusable UI components. It's further organized into sub-directories for specific sections of the application or generic UI elements.
+
+- **`src/components/Dashboard/`**: Contains components specific to the main dashboard, such as `StatCard` (for displaying key metrics), `AssetCard` (for individual project/asset display), and `AssetTabs` (for navigating between different asset types like copyrights and patents).
+- **`src/components/Patents/`**: Dedicated to the Patents section of the website.
+  - `PatentsHeader.tsx`: Handles the header for the patents page, including the "Create New Patent" button.
+  - `ProjectFilters.tsx`: Manages the filtering and search functionality for projects displayed in the Patents tab.
+  - `PatentCard.tsx`: The newly created component for displaying individual patent details in a card format, mirroring the `AssetCard`'s style.
+  - `RegisterPatentModal.tsx`: The modal form for users to input and submit new patent registration details.
+  - `ProjectCard.tsx`: Reused from the main projects display to show project-like cards within the Patents tab.
+  - `ProjectLeaderboard.tsx`: Displays a leaderboard of projects.
+  - `WalletSelector.tsx`: Component for wallet connection and selection.
+  - `StakingHistory.tsx`: Displays staking history.
+  - `VotingModal.tsx`: Modal for project voting.
+- **`src/components/ui/`**: Contains re-usable UI components from Shadcn UI, such as `Button`, `Progress`, `Input`, `Dialog`, etc. These are typically generic and can be used across the application.
+- **`src/components/Staking/`**: Components related to the staking functionality.
+- **`src/components/Artists/`**: Components specific to artist profiles and management.
+- **`src/components/Portfolio/`**: Components for user portfolio views.
+- **`src/components/History/`**: Components for displaying historical data.
+- **`src/components/Layout.tsx`**: Defines the overall page layout, often including navigation and footers, ensuring consistency across different pages.
+- **`src/components/Navigation.tsx`**: Handles the main navigation menu of the application.
+
+#### `src/hooks/`
+
+This directory contains custom React hooks, which encapsulate reusable logic and stateful behavior.
+
+- **`useStoryClient.ts`**: Likely a hook to initialize and interact with the Story Protocol SDK, providing a client instance and managing its state (e.g., loading, errors).
+- **`useStoryProtocol.ts`**: Contains the core logic for interacting with the Story Protocol, including functions like `mintAndRegisterIpAssetWithPilTerms`, handling metadata, and managing transaction states (loading, error, success).
+- **`useToast.ts`**: A custom hook for displaying notifications or "toasts" to the user.
+- **`usePatents.ts`**: (If created) This would handle data fetching, state management, and interactions related to patent data specifically, possibly interacting with Supabase.
+
+#### `src/integrations/`
+
+This is where code for integrating with external services resides.
+
+- **`src/integrations/supabase/`**: Contains all logic related to interacting with the Supabase backend.
+  - `types.ts`: Defines TypeScript interfaces and types for data structures stored in Supabase (e.g., `Patent`, `Artist`, `Project`). This is crucial for type safety and consistency.
+  - `patents.ts`: Contains functions for CRUD (Create, Read, Update, Delete) operations on the `patents` table in Supabase.
+  - Other files for `artists`, `projects`, `staking_pools`, etc., if applicable.
+
+#### `src/pages/`
+
+These are the top-level components that represent different pages or routes in the application.
+
+- **`Index.tsx`**: The main dashboard page, showcasing featured IP assets, stats, and activity feeds.
+- **`Patents.tsx`**: The main page for managing and viewing patents, incorporating filters, patent cards, and modals.
+- **`Artists.tsx`**: The page dedicated to artist profiles.
+- **`Portfolio.tsx`**: The user's personal portfolio page.
+- **`Staking.tsx`**: The page for staking functionalities.
+- **`History.tsx`**: Displays the transaction or activity history.
+- **`NotFound.tsx`**: A simple 404 page.
+
+#### `src/scripts/`
+
+Contains utility scripts, often for one-off tasks or backend operations.
+
+- **`seedDatabase.ts`**: A critical script for populating the Supabase database with initial mock data, essential for local development and testing.
+
+#### `src/utils/`
+
+Houses general utility functions that can be used across various parts of the application.
+
+#### `src/contexts/`
+
+Contains React Context API providers for managing global state that needs to be accessible by many components without prop-drilling.
+
+---
+
+#### Root Level Files in `src/`
+
+- **`App.tsx`**: The main application component, typically responsible for setting up routing and global providers.
+- **`main.tsx`**: The entry point of the React application, rendering the `App` component into the DOM.
+- **`index.css`**: The main CSS file, likely containing global styles, Tailwind CSS imports, and custom component styles (like `pixel-card`, `pixel-button`, `font-retro`, `font-pixel`).
+- **`App.css`**: Additional application-specific CSS.
+- **`vite-env.d.ts`**: TypeScript declaration file for Vite environment variables.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to open issues or submit pull requests.
