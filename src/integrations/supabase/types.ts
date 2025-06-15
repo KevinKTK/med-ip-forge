@@ -193,14 +193,9 @@ export type Database = {
           created_at: string
           current_funding: number
           description: string
-          detailed_description: string | null
           funding_contract_id: number | null
           id: number
-          images: Json | null
-          marketing_materials: Json | null
           milestones: number
-          owner_wallet_address: string | null
-          project_status: string | null
           risk_level: string
           staking_apy: number
           staking_pool_id: number | null
@@ -217,14 +212,9 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description: string
-          detailed_description?: string | null
           funding_contract_id?: number | null
           id?: never
-          images?: Json | null
-          marketing_materials?: Json | null
           milestones: number
-          owner_wallet_address?: string | null
-          project_status?: string | null
           risk_level: string
           staking_apy: number
           staking_pool_id?: number | null
@@ -241,14 +231,9 @@ export type Database = {
           created_at?: string
           current_funding?: number
           description?: string
-          detailed_description?: string | null
           funding_contract_id?: number | null
           id?: never
-          images?: Json | null
-          marketing_materials?: Json | null
           milestones?: number
-          owner_wallet_address?: string | null
-          project_status?: string | null
           risk_level?: string
           staking_apy?: number
           staking_pool_id?: number | null

@@ -8,6 +8,7 @@ import { MyProjectsView } from '@/components/Artists/MyProjectsView';
 import { CreateProjectModal } from '@/components/Artists/CreateProjectModal';
 import { useArtists } from '@/hooks/useArtists';
 import { useProjects } from '@/hooks/useProjects';
+import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 
 type Artist = Tables<'artists'>;
@@ -20,6 +21,7 @@ const Artists = () => {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('rating');
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState({
     category: 'All',
     riskLevel: 'All',
@@ -27,8 +29,9 @@ const Artists = () => {
     verified: false
   });
   
-  const { artists, isLoading: artistsLoading } = useArtists();
-  const { projects, stakingPools, patents: patentsByProject, isLoading: projectsLoading } = useProjects();
+  const { artists, isLoading: artistsLoading, refreshArtists } = useArtists();
+  const { projects, stakingPools, patents: patentsByProject, isLoading: projectsLoading, refreshProjects } = useProjects();
+  const { toast } = useToast();
 
   // Convert patent data to expected format - correctly typed as Patents with string ids
   const patents: Record<string, Patent> = useMemo(() => {
@@ -38,6 +41,27 @@ const Artists = () => {
     });
     return convertedPatents;
   }, [patentsByProject]);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refreshArtists(), refreshProjects()]);
+      toast({
+        title: "Data Refreshed",
+        description: "Artists and projects data has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: error instanceof Error ? error.message : "Failed to refresh data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const filteredArtists = useMemo(() => {
     return artists.filter(artist => {
@@ -104,6 +128,8 @@ const Artists = () => {
       <div className="container mx-auto px-6 py-8 space-y-8">
         <ArtistHeader 
           onCreateProject={handleCreateProject}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
